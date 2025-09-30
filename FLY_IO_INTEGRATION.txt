@@ -1,0 +1,698 @@
+================================================================================
+FLY.IO DEPLOYMENT STRATEGY FOR GA TECH REDDIT SYSTEM
+Migration from Firebase to Fly.io Infrastructure
+Date: September 2025
+Budget: $5/month Fly.io Subscription
+================================================================================
+
+EXECUTIVE SUMMARY
+================================================================================
+
+RECOMMENDATION: Option C - Fly.io + Supabase (Hybrid Approach)
+------------------------------------------------------------
+Deploy the application on Fly.io infrastructure while using Supabase as the
+Firebase replacement. This provides the best balance of:
+- Cost efficiency within $5/month budget
+- Feature parity with Firebase (auth, database, storage, real-time)
+- Open-source control without vendor lock-in
+- Minimal code changes required
+- Future scalability options
+
+KEY BENEFITS:
+- Supabase provides Firebase-like BaaS features on PostgreSQL
+- Fly.io handles global edge deployment and container hosting
+- Total cost stays within $5/month for initial deployment
+- Can self-host Supabase later if needed
+- Better performance with Fly.io edge locations
+
+================================================================================
+DEPLOYMENT OPTIONS ANALYSIS
+================================================================================
+
+OPTION A: Pure Fly.io (Replace Everything)
+--------------------------------------------
+FEASIBILITY: ❌ Not Recommended
+
+REQUIREMENTS:
+- Fly.io app hosting: ~$2/month (shared-256mb instance)
+- Fly Postgres: ~$3-5/month (minimal config)
+- Custom auth implementation needed
+- Custom real-time WebSocket server needed
+- Object storage solution needed (external S3 or similar)
+
+PROBLEMS:
+- $5/month budget insufficient for all services
+- Massive development effort to replace Firebase features
+- No built-in auth system (need Auth0 or custom JWT)
+- No real-time subscriptions without custom WebSocket implementation
+- Storage would require external service (additional cost)
+
+ESTIMATED COST: $15-25/month minimum for viable setup
+DEVELOPMENT TIME: 3-6 months to rebuild Firebase features
+
+--------------------------------------------
+
+OPTION B: Hybrid (Fly.io Hosting + Firebase Backend)
+--------------------------------------------
+FEASIBILITY: ✓ Possible but Not Optimal
+
+ARCHITECTURE:
+- Frontend hosted on Fly.io: ~$2-3/month
+- Firebase continues as backend (free tier)
+- API proxy through Fly.io for better performance
+
+PROS:
+- Minimal code changes
+- Keep existing Firebase features
+- Better global performance via Fly.io CDN
+- Stay within budget
+
+CONS:
+- Still locked into Firebase ecosystem
+- Two platforms to manage
+- Defeats purpose of moving away from Firebase
+- Complex deployment pipeline
+
+ESTIMATED COST: $3-5/month (Fly.io only)
+DEVELOPMENT TIME: 1 week
+
+--------------------------------------------
+
+OPTION C: Fly.io + Supabase (RECOMMENDED) ⭐
+--------------------------------------------
+FEASIBILITY: ✅ Optimal Solution
+
+ARCHITECTURE:
+- Fly.io hosts Next.js/Node.js application: ~$2/month
+- Supabase free tier for backend services
+- PostgreSQL database (500MB free)
+- Authentication (50,000 MAUs free)
+- Real-time subscriptions (500 concurrent connections free)
+- Storage (1GB free)
+
+PROS:
+- Complete Firebase replacement
+- Open-source and self-hostable
+- PostgreSQL > Firestore for complex queries
+- Built-in auth with social providers
+- Real-time subscriptions included
+- Better developer experience with SQL
+- Can migrate to self-hosted later
+
+CONS:
+- Need to migrate from NoSQL to SQL
+- Learning curve for PostgreSQL
+- Some Firebase features need alternatives
+
+ESTIMATED COST: $2-3/month (Fly.io only, Supabase free tier)
+DEVELOPMENT TIME: 2-3 weeks for migration
+
+--------------------------------------------
+
+OPTION D: Fly.io + Separate Database Services
+--------------------------------------------
+FEASIBILITY: ⚠️ Complex and Over Budget
+
+REQUIREMENTS:
+- Fly.io app hosting: ~$2/month
+- Database: Neon, PlanetScale, or CockroachDB free tiers
+- Auth: Auth0 or Clerk free tier
+- Storage: Cloudflare R2 or Backblaze B2
+- Real-time: Ably or Pusher free tier
+
+PROBLEMS:
+- Too many services to manage
+- Complex integration work
+- Multiple points of failure
+- Will exceed budget as soon as you scale
+- Significant development effort
+
+ESTIMATED COST: $5-10/month initially, grows quickly
+DEVELOPMENT TIME: 1-2 months
+
+================================================================================
+RECOMMENDED IMPLEMENTATION: FLY.IO + SUPABASE
+================================================================================
+
+PHASE 1: SETUP & CONFIGURATION (Days 1-3)
+------------------------------------------
+
+1. FLY.IO SETUP:
+```bash
+# Install Fly CLI
+curl -L https://fly.io/install.sh | sh
+
+# Sign up/Login
+fly auth login
+
+# Create app
+fly launch --name gatech-reddit
+```
+
+2. SUPABASE SETUP:
+```bash
+# Create free project at https://supabase.com
+# Get connection string and API keys
+# Enable GitHub and Google OAuth providers
+```
+
+3. DATABASE MIGRATION:
+```sql
+-- Supabase SQL schema (PostgreSQL)
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  username TEXT UNIQUE NOT NULL,
+  email TEXT UNIQUE NOT NULL,
+  github_id TEXT UNIQUE,
+  gatech_verified BOOLEAN DEFAULT false,
+  karma_post INTEGER DEFAULT 0,
+  karma_comment INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  last_seen TIMESTAMPTZ DEFAULT NOW(),
+  preferences JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE TABLE communities (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
+  description TEXT,
+  type TEXT CHECK (type IN ('course', 'project', 'general')),
+  rules TEXT[],
+  moderators UUID[],
+  member_count INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  settings JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE TABLE posts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  author_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  community_id UUID REFERENCES communities(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  content TEXT,
+  type TEXT CHECK (type IN ('text', 'link', 'vibe-code', 'project')),
+  score INTEGER DEFAULT 0,
+  comment_count INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  tags TEXT[],
+  metadata JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE TABLE comments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  post_id UUID REFERENCES posts(id) ON DELETE CASCADE,
+  author_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  parent_id UUID REFERENCES comments(id) ON DELETE CASCADE,
+  content TEXT NOT NULL,
+  score INTEGER DEFAULT 0,
+  depth INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  edited_at TIMESTAMPTZ,
+  deleted BOOLEAN DEFAULT false
+);
+
+CREATE TABLE votes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  target_id UUID NOT NULL,
+  target_type TEXT CHECK (target_type IN ('post', 'comment')),
+  value INTEGER CHECK (value IN (1, -1)),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, target_id, target_type)
+);
+
+-- Enable Row Level Security
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE comments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE votes ENABLE ROW LEVEL SECURITY;
+
+-- Create indexes for performance
+CREATE INDEX idx_posts_community ON posts(community_id);
+CREATE INDEX idx_posts_author ON posts(author_id);
+CREATE INDEX idx_comments_post ON comments(post_id);
+CREATE INDEX idx_votes_target ON votes(target_id, target_type);
+```
+
+PHASE 2: APPLICATION MIGRATION (Days 4-7)
+------------------------------------------
+
+1. CREATE DOCKERFILE:
+```dockerfile
+# Dockerfile
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+RUN npm ci --only=production
+
+# Copy application
+COPY . .
+
+# Build if needed
+RUN npm run build
+
+EXPOSE 3000
+CMD ["npm", "start"]
+```
+
+2. CREATE FLY.TOML:
+```toml
+# fly.toml
+app = "gatech-reddit"
+primary_region = "atl"  # Atlanta for GA Tech
+
+[build]
+  builder = "dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "3000"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 1
+  max_machines_running = 2
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 3000
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+[checks]
+  [checks.alive]
+    type = "tcp"
+    interval = "15s"
+    timeout = "2s"
+```
+
+3. MIGRATE FIREBASE CODE TO SUPABASE:
+```javascript
+// OLD: Firebase implementation
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+
+// NEW: Supabase implementation
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
+
+// Authentication migration
+// OLD Firebase:
+const auth = getAuth();
+await signInWithPopup(auth, new GithubAuthProvider());
+
+// NEW Supabase:
+await supabase.auth.signInWithOAuth({
+  provider: 'github',
+  options: {
+    redirectTo: 'https://gatech-reddit.fly.dev/auth/callback'
+  }
+});
+
+// Database migration
+// OLD Firebase:
+const db = getFirestore();
+const postsRef = collection(db, 'posts');
+const q = query(postsRef, where('community', '==', 'ai-research'));
+const snapshot = await getDocs(q);
+
+// NEW Supabase:
+const { data: posts, error } = await supabase
+  .from('posts')
+  .select('*')
+  .eq('community_id', communityId)
+  .order('created_at', { ascending: false })
+  .limit(25);
+
+// Real-time subscriptions
+// OLD Firebase:
+onSnapshot(q, (snapshot) => {
+  // Handle updates
+});
+
+// NEW Supabase:
+const subscription = supabase
+  .channel('posts-channel')
+  .on('postgres_changes',
+    { event: '*', schema: 'public', table: 'posts' },
+    (payload) => {
+      // Handle updates
+    }
+  )
+  .subscribe();
+
+// Storage migration
+// OLD Firebase:
+const storage = getStorage();
+const storageRef = ref(storage, `avatars/${userId}`);
+await uploadBytes(storageRef, file);
+
+// NEW Supabase:
+const { data, error } = await supabase.storage
+  .from('avatars')
+  .upload(`${userId}/avatar.png`, file);
+```
+
+PHASE 3: DEPLOYMENT (Days 8-10)
+--------------------------------
+
+1. ENVIRONMENT VARIABLES:
+```bash
+# Set secrets in Fly.io
+fly secrets set SUPABASE_URL=https://xxx.supabase.co
+fly secrets set SUPABASE_ANON_KEY=xxx
+fly secrets set SUPABASE_SERVICE_KEY=xxx
+fly secrets set GITHUB_CLIENT_ID=xxx
+fly secrets set GITHUB_CLIENT_SECRET=xxx
+```
+
+2. DEPLOY TO FLY.IO:
+```bash
+# Initial deployment
+fly deploy
+
+# Scale to stay within budget
+fly scale vm shared-cpu-1x --memory 256
+
+# Monitor logs
+fly logs
+
+# SSH into container if needed
+fly ssh console
+```
+
+3. DOMAIN SETUP:
+```bash
+# Add custom domain (if available)
+fly certs add community.gatech.edu
+
+# Or use default Fly.io domain
+# https://gatech-reddit.fly.dev
+```
+
+PHASE 4: OPTIMIZATION (Days 11-14)
+-----------------------------------
+
+1. CACHING STRATEGY:
+```javascript
+// Implement Redis caching with Fly.io Redis
+import Redis from 'ioredis';
+
+const redis = new Redis({
+  host: process.env.FLY_REDIS_HOST,
+  port: 6379,
+  family: 6  // Fly.io uses IPv6
+});
+
+// Cache frequently accessed data
+async function getCachedPosts(communityId) {
+  const cacheKey = `posts:${communityId}`;
+  const cached = await redis.get(cacheKey);
+
+  if (cached) return JSON.parse(cached);
+
+  const posts = await fetchPostsFromSupabase(communityId);
+  await redis.setex(cacheKey, 300, JSON.stringify(posts)); // 5 min cache
+  return posts;
+}
+```
+
+2. EDGE OPTIMIZATION:
+```javascript
+// Use Fly.io's multi-region deployment
+// fly.toml
+[regions]
+  primary = "atl"  // Atlanta
+  fallback = ["ord", "dfw"]  // Chicago, Dallas
+
+// Implement region-aware caching
+const region = process.env.FLY_REGION;
+const cachePrefix = `${region}:`;
+```
+
+================================================================================
+COST BREAKDOWN
+================================================================================
+
+MONTHLY COSTS WITH $5 BUDGET:
+------------------------------
+Fly.io Shared VM (256MB):     $1.94/month
+Fly.io Bandwidth (10GB):      $0.20/month
+Supabase Free Tier:            $0.00/month
+Domain (if custom):            $0.00/month (University provided)
+----------------------------------------
+TOTAL:                         $2.14/month
+
+RESERVE BUDGET:                $2.86/month (for scaling/overages)
+
+SCALING THRESHOLDS:
+-------------------
+Users 0-500:        Stay on current plan ($2.14/month)
+Users 500-1000:     Add Redis cache (~$2/month more)
+Users 1000-5000:    Upgrade to Supabase Pro ($25/month)
+Users 5000+:        Scale Fly.io instances (add $5-10/month)
+
+================================================================================
+MIGRATION CHECKLIST
+================================================================================
+
+PRE-MIGRATION:
+□ Backup all Firebase data (Firestore, Auth, Storage)
+□ Create Supabase account and project
+□ Create Fly.io account and install CLI
+□ Set up local development environment
+□ Create migration scripts for data
+
+MIGRATION:
+□ Set up PostgreSQL schema in Supabase
+□ Migrate user authentication data
+□ Convert Firestore documents to PostgreSQL rows
+□ Upload storage files to Supabase Storage
+□ Update application code for Supabase SDK
+□ Create Dockerfile and fly.toml
+□ Test locally with Supabase
+□ Deploy to Fly.io staging
+
+POST-MIGRATION:
+□ Verify all features work
+□ Set up monitoring and alerts
+□ Configure backups
+□ Update DNS if using custom domain
+□ Monitor costs for first week
+□ Document any issues/learnings
+
+================================================================================
+CREDENTIALS & ACCESS NEEDED
+================================================================================
+
+FROM YOU:
+---------
+1. Fly.io account credentials or API token
+2. Decision on app name (e.g., gatech-reddit)
+3. Preferred region (recommend Atlanta - "atl")
+4. GitHub OAuth app credentials (can reuse Firebase ones)
+5. Custom domain details (if applicable)
+
+WE'LL CREATE:
+-------------
+1. Supabase project (free tier)
+2. PostgreSQL database schema
+3. Storage buckets
+4. Authentication providers
+5. Environment variables
+6. Deployment pipeline
+
+================================================================================
+TECHNICAL ARCHITECTURE CHANGES
+================================================================================
+
+BEFORE (Firebase):
+------------------
+Browser → Firebase Hosting → Firestore/Auth/Storage
+         ↓
+    CDN (Automatic)
+
+AFTER (Fly.io + Supabase):
+---------------------------
+Browser → Fly.io Edge → Node.js App → Supabase
+         ↓               ↓              ↓
+    Global Regions   Container      PostgreSQL
+                                    Auth Service
+                                    Storage (S3)
+                                    Real-time
+
+KEY DIFFERENCES:
+----------------
+1. DATABASE:
+   - Before: NoSQL (Firestore) with collection/document model
+   - After: PostgreSQL with relational tables and JSONB for flexibility
+
+2. AUTHENTICATION:
+   - Before: Firebase Auth with custom tokens
+   - After: Supabase Auth with JWT tokens (compatible with standards)
+
+3. REAL-TIME:
+   - Before: Firestore listeners (proprietary)
+   - After: PostgreSQL CDC with WebSocket channels (open standard)
+
+4. STORAGE:
+   - Before: Firebase Storage (Google Cloud Storage)
+   - After: Supabase Storage (S3-compatible)
+
+5. HOSTING:
+   - Before: Static hosting with Firebase
+   - After: Container-based with Fly.io (more flexibility)
+
+6. SCALING:
+   - Before: Automatic but expensive
+   - After: Manual but cost-controlled
+
+================================================================================
+ROLLBACK PLAN
+================================================================================
+
+If migration fails or issues arise:
+
+1. IMMEDIATE ROLLBACK (< 1 hour):
+   - Keep Firebase project active during migration
+   - Simply redirect DNS back to Firebase
+   - No data loss as Firebase remains unchanged
+
+2. PARTIAL ROLLBACK (< 1 day):
+   - Run hybrid mode temporarily
+   - Fly.io frontend → Firebase backend
+   - Fix issues while maintaining service
+
+3. DATA ROLLBACK (< 1 week):
+   - Export Supabase data back to JSON
+   - Re-import to Firebase using Admin SDK
+   - Estimated time: 4-6 hours
+
+================================================================================
+ADVANTAGES OF THIS APPROACH
+================================================================================
+
+1. COST CONTROL:
+   - Predictable $5/month budget
+   - No surprise bills from usage spikes
+   - Free tier generous enough for MVP
+
+2. OPEN SOURCE:
+   - Supabase is open source (can self-host later)
+   - PostgreSQL is industry standard
+   - No vendor lock-in
+
+3. BETTER DEVELOPER EXPERIENCE:
+   - SQL is more powerful than NoSQL for queries
+   - Migrations and schema management
+   - Better local development with Docker
+
+4. PERFORMANCE:
+   - Fly.io edge deployment (closer to users)
+   - PostgreSQL indexes for fast queries
+   - Built-in connection pooling
+
+5. FEATURES:
+   - Full-text search built into PostgreSQL
+   - JSONB for flexible data storage
+   - PostGIS for location features (future)
+   - Vector embeddings for AI (future)
+
+================================================================================
+POTENTIAL CHALLENGES & SOLUTIONS
+================================================================================
+
+CHALLENGE 1: Data Model Migration
+PROBLEM: Converting nested documents to relational tables
+SOLUTION: Use JSONB columns for nested data, normalize over time
+
+CHALLENGE 2: Real-time Performance
+PROBLEM: PostgreSQL CDC might be slower than Firestore
+SOLUTION: Implement Redis caching for hot data
+
+CHALLENGE 3: File Upload Size
+PROBLEM: Fly.io has request size limits
+SOLUTION: Direct upload to Supabase Storage from browser
+
+CHALLENGE 4: Authentication Migration
+PROBLEM: User passwords can't be migrated
+SOLUTION: Force password reset or use social auth only
+
+CHALLENGE 5: SEO and Crawling
+PROBLEM: Client-side rendering impacts SEO
+SOLUTION: Implement SSR with Next.js on Fly.io
+
+================================================================================
+NEXT STEPS
+================================================================================
+
+1. IMMEDIATE (Today):
+   - Review this plan and provide feedback
+   - Confirm budget constraints ($5/month)
+   - Decide on migration timeline
+
+2. SETUP (Day 1-2):
+   - Create Fly.io account
+   - Create Supabase project
+   - Set up development environment
+
+3. DEVELOPMENT (Week 1):
+   - Build migration scripts
+   - Update application code
+   - Test in development
+
+4. DEPLOYMENT (Week 2):
+   - Deploy to Fly.io staging
+   - Perform user acceptance testing
+   - Go live with production
+
+5. MONITORING (Ongoing):
+   - Track costs daily for first month
+   - Monitor performance metrics
+   - Gather user feedback
+
+================================================================================
+CONCLUSION
+================================================================================
+
+The Fly.io + Supabase combination offers the best path forward for migrating
+the GA Tech Reddit system away from Firebase while staying within the $5/month
+budget. This approach provides:
+
+- ✅ Complete Firebase feature parity
+- ✅ Better cost control and predictability
+- ✅ Open-source foundation without vendor lock-in
+- ✅ Superior query capabilities with PostgreSQL
+- ✅ Global edge deployment for better performance
+- ✅ Clear upgrade path as the platform grows
+
+The migration will require 2-3 weeks of development work but results in a more
+flexible, cost-effective, and scalable platform. The architecture supports
+growth from 100 to 10,000+ users without major changes.
+
+Most importantly, this approach gives you full control over your infrastructure
+and data while leveraging modern, battle-tested technologies that will remain
+relevant for years to come.
+
+================================================================================
+END OF DOCUMENT
+================================================================================

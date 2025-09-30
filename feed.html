@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="GT AI Hub Feed - Browse posts from Georgia Tech's AI & Vibe-Coding community">
+    <meta name="keywords" content="Georgia Tech, AI, Feed, Posts, Discussions">
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#B3A369">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+    <title>Feed - GT AI & Vibe-Coding Hub</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="/styles/main.css">
+
+    <!-- Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://firebaseapp.com">
+
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="feed-page">
+    <!-- Skip to main content -->
+    <a href="#main" class="skip-link">Skip to main content</a>
+
+    <!-- Header Navigation -->
+    <header class="site-header" role="banner">
+        <nav class="navbar" aria-label="Main navigation">
+            <div class="nav-container">
+                <!-- Left Section -->
+                <div class="nav-left">
+                    <button class="menu-toggle" id="menu-toggle" aria-label="Toggle sidebar" aria-expanded="false">
+                        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill="currentColor" d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                        </svg>
+                    </button>
+                    <a href="/" class="logo" aria-label="GT AI Hub Home">
+                        <svg class="logo-icon" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">
+                            <rect width="32" height="32" fill="#B3A369"/>
+                        </svg>
+                        <span class="logo-text">GT AI Hub</span>
+                    </a>
+                </div>
+
+                <!-- Center Section - Search -->
+                <div class="nav-center">
+                    <form class="search-form" role="search" aria-label="Search posts">
+                        <label for="search-input" class="visually-hidden">Search</label>
+                        <input
+                            type="search"
+                            id="search-input"
+                            class="search-input"
+                            placeholder="Search posts, users, communities..."
+                            autocomplete="off"
+                            aria-autocomplete="list"
+                            aria-controls="search-results"
+                        >
+                        <button type="submit" class="search-button" aria-label="Submit search">
+                            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                                <path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                            </svg>
+                        </button>
+                        <div id="search-results" class="search-results" role="listbox" hidden></div>
+                    </form>
+                </div>
+
+                <!-- Right Section - User Actions -->
+                <div class="nav-right">
+                    <button class="icon-button" aria-label="Create new post" title="Create post">
+                        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                        </svg>
+                    </button>
+
+                    <button class="icon-button notifications-button" aria-label="Notifications" aria-describedby="notification-count">
+                        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill="currentColor" d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+                        </svg>
+                        <span class="notification-badge" id="notification-count" aria-label="3 unread notifications">3</span>
+                    </button>
+
+                    <button class="user-menu-toggle" aria-label="User menu" aria-expanded="false" aria-haspopup="menu">
+                        <img src="/assets/default-avatar.png" alt="" class="user-avatar" width="32" height="32">
+                        <span class="user-name">Username</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill="currentColor" d="M7 10l5 5 5-5z"/>
+                        </svg>
+                    </button>
+
+                    <!-- User Dropdown Menu -->
+                    <div class="user-dropdown" role="menu" hidden>
+                        <div class="dropdown-header">
+                            <div class="user-info">
+                                <img src="/assets/default-avatar.png" alt="" width="40" height="40">
+                                <div>
+                                    <div class="user-display-name">Display Name</div>
+                                    <div class="user-karma">1,234 karma</div>
+                                </div>
+                            </div>
+                        </div>
+                        <ul class="dropdown-menu">
+                            <li><a href="/u/username" role="menuitem">Profile</a></li>
+                            <li><a href="/settings" role="menuitem">Settings</a></li>
+                            <li><a href="/saved" role="menuitem">Saved Posts</a></li>
+                            <li class="menu-divider" role="separator"></li>
+                            <li><a href="/logout" role="menuitem">Sign Out</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar" aria-label="Sidebar navigation">
+            <div class="sidebar-content">
+                <!-- Create Post Button -->
+                <div class="sidebar-section">
+                    <a href="/create-post.html" class="btn btn-primary btn-block">
+                        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                        </svg>
+                        Create Post
+                    </a>
+                </div>
+
+                <!-- Navigation Links -->
+                <nav class="sidebar-nav" aria-label="Feed navigation">
+                    <ul class="nav-list">
+                        <li class="nav-item active">
+                            <a href="/feed.html" class="nav-link">
+                                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                                </svg>
+                                <span>Home</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/popular" class="nav-link">
+                                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill="currentColor" d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+                                </svg>
+                                <span>Popular</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/all" class="nav-link">
+                                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                </svg>
+                                <span>All</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <!-- Communities Section -->
+                <div class="sidebar-section">
+                    <h2 class="sidebar-heading">My Communities</h2>
+                    <ul class="community-list">
+                        <li class="community-item">
+                            <a href="/c/ai-coding" class="community-link">
+                                <span class="community-icon">AI</span>
+                                <span class="community-name">AI & Vibe-Coding</span>
+                            </a>
+                        </li>
+                        <li class="community-item">
+                            <a href="/c/cs7641" class="community-link">
+                                <span class="community-icon">CS</span>
+                                <span class="community-name">CS 7641 - Machine Learning</span>
+                            </a>
+                        </li>
+                        <li class="community-item">
+                            <a href="/c/hackgt" class="community-link">
+                                <span class="community-icon">HG</span>
+                                <span class="community-name">HackGT Projects</span>
+                            </a>
+                        </li>
+                        <li class="community-item">
+                            <a href="/c/research" class="community-link">
+                                <span class="community-icon">RS</span>
+                                <span class="community-name">Research & Papers</span>
+                            </a>
+                        </li>
+                        <li class="community-item">
+                            <a href="/c/careers" class="community-link">
+                                <span class="community-icon">CR</span>
+                                <span class="community-name">Careers & Internships</span>
+                            </a>
+                        </li>
+                    </ul>
+                    <a href="/communities" class="sidebar-link">Browse all communities</a>
+                </div>
+
+                <!-- Resources Section -->
+                <div class="sidebar-section">
+                    <h2 class="sidebar-heading">Resources</h2>
+                    <ul class="resource-list">
+                        <li><a href="/guidelines">Community Guidelines</a></li>
+                        <li><a href="/vibe-coding-guide">Vibe-Coding Guide</a></li>
+                        <li><a href="/help">Help Center</a></li>
+                        <li><a href="/about">About</a></li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main id="main" class="feed-main" role="main">
+            <!-- Feed Header -->
+            <div class="feed-header">
+                <h1 class="feed-title">Your Feed</h1>
+
+                <!-- Sort Options -->
+                <div class="sort-options" role="group" aria-label="Sort posts by">
+                    <button class="sort-button active" data-sort="hot" aria-pressed="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill="currentColor" d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/>
+                        </svg>
+                        Hot
+                    </button>
+                    <button class="sort-button" data-sort="new" aria-pressed="false">
+                        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill="currentColor" d="M23 12l-2.44-2.78.34-3.68-3.61-.82-1.89-3.18L12 3 8.6 1.54 6.71 4.72l-3.61.81.34 3.68L1 12l2.44 2.78-.34 3.69 3.61.82 1.89 3.18L12 21l3.4 1.46 1.89-3.18 3.61-.82-.34-3.68L23 12z"/>
+                        </svg>
+                        New
+                    </button>
+                    <button class="sort-button" data-sort="top" aria-pressed="false">
+                        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill="currentColor" d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                        </svg>
+                        Top
+                    </button>
+                    <button class="sort-button" data-sort="controversial" aria-pressed="false">
+                        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill="currentColor" d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+                        </svg>
+                        Controversial
+                    </button>
+                </div>
+            </div>
+
+            <!-- Posts Container -->
+            <div class="posts-container" id="posts-container" role="feed" aria-label="Posts">
+                <!-- Post Card Template Structure -->
+                <article class="post-card" role="article" aria-labelledby="post-title-1">
+                    <div class="post-voting">
+                        <button class="vote-button upvote" aria-label="Upvote post" aria-pressed="false">
+                            <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+                                <path fill="currentColor" d="M7 14l5-5 5 5z"/>
+                            </svg>
+                        </button>
+                        <span class="vote-score" aria-label="Post score">1.2k</span>
+                        <button class="vote-button downvote" aria-label="Downvote post" aria-pressed="false">
+                            <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+                                <path fill="currentColor" d="M7 10l5 5 5-5z"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="post-content">
+                        <div class="post-header">
+                            <a href="/c/ai-coding" class="post-community">c/ai-coding</a>
+                            <span class="post-meta-separator" aria-hidden="true">•</span>
+                            <span class="post-author">Posted by <a href="/u/username">u/username</a></span>
+                            <span class="post-meta-separator" aria-hidden="true">•</span>
+                            <time class="post-time" datetime="2025-09-30T10:00:00Z">2 hours ago</time>
+                            <span class="post-flair vibe-code">Vibe-Code</span>
+                        </div>
+
+                        <h2 class="post-title" id="post-title-1">
+                            <a href="/post.html">Successfully built a full-stack app using only Vibe-Coding! Here's what I learned...</a>
+                        </h2>
+
+                        <div class="post-preview">
+                            <p>I spent the weekend experimenting with pure AI-assisted development using Claude and Cursor.
+                            Built a complete task management app without writing a single line of code manually.
+                            The experience was mind-blowing but also revealed some interesting challenges...</p>
+                        </div>
+
+                        <div class="post-footer">
+                            <a href="/post.html" class="post-action">
+                                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill="currentColor" d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z"/>
+                                </svg>
+                                <span>234 comments</span>
+                            </a>
+
+                            <button class="post-action" aria-label="Share post">
+                                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
+                                </svg>
+                                <span>Share</span>
+                            </button>
+
+                            <button class="post-action" aria-label="Save post" aria-pressed="false">
+                                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill="currentColor" d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+                                </svg>
+                                <span>Save</span>
+                            </button>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Loading State -->
+                <div class="loading-indicator" id="loading-indicator" hidden>
+                    <div class="spinner" aria-label="Loading more posts"></div>
+                </div>
+
+                <!-- Empty State -->
+                <div class="empty-state" id="empty-state" hidden>
+                    <svg width="64" height="64" viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill="currentColor" d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z"/>
+                    </svg>
+                    <h2>No posts yet</h2>
+                    <p>Be the first to share something with the community!</p>
+                    <a href="/create-post.html" class="btn btn-primary">Create Post</a>
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Sidebar (Optional - for larger screens) -->
+        <aside class="right-sidebar" aria-label="Trending and announcements">
+            <!-- Trending Topics -->
+            <section class="sidebar-widget">
+                <h2 class="widget-title">Trending Topics</h2>
+                <ol class="trending-list">
+                    <li class="trending-item">
+                        <a href="/search?q=claude-3.5">#Claude-3.5</a>
+                        <span class="trending-count">45 posts</span>
+                    </li>
+                    <li class="trending-item">
+                        <a href="/search?q=hackgt">#HackGT2025</a>
+                        <span class="trending-count">32 posts</span>
+                    </li>
+                    <li class="trending-item">
+                        <a href="/search?q=cursor-ide">#CursorIDE</a>
+                        <span class="trending-count">28 posts</span>
+                    </li>
+                    <li class="trending-item">
+                        <a href="/search?q=cs7641">#CS7641</a>
+                        <span class="trending-count">19 posts</span>
+                    </li>
+                    <li class="trending-item">
+                        <a href="/search?q=internships">#Internships</a>
+                        <span class="trending-count">17 posts</span>
+                    </li>
+                </ol>
+            </section>
+
+            <!-- Community Announcements -->
+            <section class="sidebar-widget">
+                <h2 class="widget-title">Announcements</h2>
+                <div class="announcement-card">
+                    <h3 class="announcement-title">Welcome to GT AI Hub!</h3>
+                    <p class="announcement-text">
+                        Please read our community guidelines before posting. Let's build something amazing together!
+                    </p>
+                    <a href="/guidelines" class="announcement-link">Read Guidelines</a>
+                </div>
+            </section>
+
+            <!-- Active Users -->
+            <section class="sidebar-widget">
+                <h2 class="widget-title">Active Now</h2>
+                <div class="active-users">
+                    <div class="active-count">
+                        <span class="active-number">42</span>
+                        <span class="active-label">users online</span>
+                    </div>
+                </div>
+            </section>
+        </aside>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/feed.js" defer></script>
+</body>
+</html>

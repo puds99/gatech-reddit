@@ -1,0 +1,1409 @@
+================================================================================
+GEORGIA TECH AI & VIBE-CODING COMMUNITY PLATFORM
+System Architecture Document v1.0
+Date: September 2025
+================================================================================
+
+TABLE OF CONTENTS
+--------------------------------------------------------------------------------
+1. EXECUTIVE ARCHITECTURE SUMMARY
+2. SYSTEM ARCHITECTURE OVERVIEW
+3. FRONTEND ARCHITECTURE
+4. BACKEND ARCHITECTURE (FIREBASE)
+5. DATA MODELS & SCHEMAS
+6. AUTHENTICATION & AUTHORIZATION
+7. REAL-TIME FEATURES ARCHITECTURE
+8. FILE STRUCTURE & ORGANIZATION
+9. SECURITY ARCHITECTURE
+10. PERFORMANCE & SCALABILITY
+11. DEPLOYMENT ARCHITECTURE
+12. TECHNOLOGY STACK JUSTIFICATION
+13. ARCHITECTURE DECISION RECORDS (ADRs)
+14. MIGRATION & EVOLUTION STRATEGY
+
+================================================================================
+1. EXECUTIVE ARCHITECTURE SUMMARY
+================================================================================
+
+1.1 ARCHITECTURAL STYLE
+------------------------
+HYBRID ARCHITECTURE: Serverless + JAMstack + Real-time
+- Frontend: Progressive Web App (PWA) with offline capabilities
+- Backend: Firebase BaaS (Backend-as-a-Service)
+- Real-time: WebSocket connections via Firebase SDKs
+- Storage: NoSQL document store (Firestore) + Object storage (Firebase Storage)
+- Edge: Cloudflare CDN with Workers for edge computing
+
+1.2 KEY ARCHITECTURAL PRINCIPLES
+---------------------------------
+- SERVERLESS FIRST: No server management, auto-scaling
+- EVENT-DRIVEN: Real-time updates via Firebase listeners
+- OFFLINE-FIRST: PWA with service workers and local caching
+- SECURITY BY DESIGN: Zero-trust model with Firebase Security Rules
+- PROGRESSIVE ENHANCEMENT: Core features work without JavaScript
+- MOBILE-FIRST: Responsive design with touch optimization
+- AI-NATIVE: Built for AI integration from day one
+
+1.3 HIGH-LEVEL SYSTEM DIAGRAM
+------------------------------
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        CLIENT LAYER                              │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
+│  │   PWA    │  │  Mobile  │  │  Desktop │  │   CLI    │       │
+│  │  (Web)   │  │   Web    │  │   Web    │  │  Tools   │       │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘       │
+│       └──────────────┴──────────────┴──────────────┘            │
+│                            │                                     │
+├─────────────────────────────┼───────────────────────────────────┤
+│                     EDGE LAYER                                   │
+├─────────────────────────────┼───────────────────────────────────┤
+│       ┌──────────────────────────────────────┐                  │
+│       │     Cloudflare CDN & Workers         │                  │
+│       │  (Caching, DDoS, Edge Functions)     │                  │
+│       └──────────────────┬───────────────────┘                  │
+│                          │                                       │
+├──────────────────────────┼───────────────────────────────────────┤
+│                   FIREBASE LAYER                                 │
+├──────────────────────────┼───────────────────────────────────────┤
+│  ┌───────────────────────┼────────────────────────────┐         │
+│  │                       │                             │         │
+│  │  ┌──────────┐  ┌─────▼──────┐  ┌──────────┐      │         │
+│  │  │   Auth   │  │  Firestore  │  │ Storage  │      │         │
+│  │  │ (OAuth)  │  │  (NoSQL DB) │  │ (Files)  │      │         │
+│  │  └──────────┘  └─────────────┘  └──────────┘      │         │
+│  │                                                     │         │
+│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐        │         │
+│  │  │Functions │  │ Hosting  │  │Analytics │        │         │
+│  │  │(Compute) │  │  (Static)│  │ (Metrics)│        │         │
+│  │  └──────────┘  └──────────┘  └──────────┘        │         │
+│  └─────────────────────────────────────────────────────┘         │
+│                                                                   │
+├───────────────────────────────────────────────────────────────────┤
+│                    EXTERNAL SERVICES                              │
+├───────────────────────────────────────────────────────────────────┤
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐        │
+│  │  GitHub  │  │  Claude  │  │  OpenAI  │  │   GT     │        │
+│  │   OAuth  │  │    API   │  │    API   │  │   SSO    │        │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘        │
+└───────────────────────────────────────────────────────────────────┘
+```
+
+================================================================================
+2. SYSTEM ARCHITECTURE OVERVIEW
+================================================================================
+
+2.1 ARCHITECTURAL PATTERNS
+---------------------------
+PRIMARY PATTERNS:
+- Model-View-ViewModel (MVVM) for frontend
+- Repository Pattern for data access
+- Observer Pattern for real-time updates
+- Command Query Responsibility Segregation (CQRS) for read/write optimization
+- Event Sourcing for audit trails
+- Saga Pattern for distributed transactions
+
+SUPPORTING PATTERNS:
+- Factory Pattern for component creation
+- Decorator Pattern for feature enhancement
+- Strategy Pattern for sorting algorithms
+- Chain of Responsibility for middleware
+- Circuit Breaker for external API calls
+
+2.2 COMPONENT ARCHITECTURE
+---------------------------
+```
+┌─────────────────────────────────────────────────────────┐
+│                    PRESENTATION LAYER                    │
+├─────────────────────────────────────────────────────────┤
+│ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐       │
+│ │   Views     │ │ Components  │ │   Layouts   │       │
+│ │  (Pages)    │ │ (Reusable)  │ │ (Templates) │       │
+│ └──────┬──────┘ └──────┬──────┘ └──────┬──────┘       │
+│        └────────────────┴────────────────┘              │
+│                         │                                │
+├─────────────────────────┼────────────────────────────────┤
+│                 STATE MANAGEMENT                         │
+├─────────────────────────┼────────────────────────────────┤
+│ ┌─────────────┐ ┌──────▼──────┐ ┌─────────────┐       │
+│ │   Stores    │ │   Actions    │ │  Reducers   │       │
+│ │ (App State) │ │  (Commands)  │ │ (Pure Fns)  │       │
+│ └──────┬──────┘ └──────┬──────┘ └──────┬──────┘       │
+│        └────────────────┴────────────────┘              │
+│                         │                                │
+├─────────────────────────┼────────────────────────────────┤
+│                  SERVICE LAYER                           │
+├─────────────────────────┼────────────────────────────────┤
+│ ┌─────────────┐ ┌──────▼──────┐ ┌─────────────┐       │
+│ │    Auth     │ │     API      │ │   Cache     │       │
+│ │  Service    │ │   Service    │ │  Service    │       │
+│ └─────────────┘ └──────┬──────┘ └─────────────┘       │
+│                         │                                │
+├─────────────────────────┼────────────────────────────────┤
+│                   DATA LAYER                             │
+├─────────────────────────┼────────────────────────────────┤
+│ ┌─────────────┐ ┌──────▼──────┐ ┌─────────────┐       │
+│ │ Repository  │ │   Firebase   │ │   Local     │       │
+│ │  Pattern    │ │   Adapter    │ │  Storage    │       │
+│ └─────────────┘ └─────────────┘ └─────────────┘       │
+└───────────────────────────────────────────────────────────┘
+```
+
+2.3 DATA FLOW ARCHITECTURE
+---------------------------
+```
+User Action → View → ViewModel → Service → Repository → Firebase
+     ↑                                                      │
+     └──────── Real-time Update via Listener ──────────────┘
+```
+
+WRITE PATH:
+1. User initiates action in UI
+2. View Model validates input
+3. Service layer applies business logic
+4. Repository persists to Firestore
+5. Optimistic update applied locally
+6. Firebase confirms/rejects write
+7. UI updates based on result
+
+READ PATH:
+1. Component requests data via ViewModel
+2. ViewModel checks local cache
+3. If cache miss, queries Repository
+4. Repository fetches from Firestore
+5. Data cached locally with TTL
+6. Real-time listener established
+7. Updates pushed automatically
+
+================================================================================
+3. FRONTEND ARCHITECTURE
+================================================================================
+
+3.1 COMPONENT STRUCTURE
+------------------------
+ATOMIC DESIGN HIERARCHY:
+```
+/components/
+├── atoms/              # Basic building blocks
+│   ├── Button/
+│   ├── Input/
+│   ├── Avatar/
+│   └── Badge/
+├── molecules/          # Simple combinations
+│   ├── VoteButtons/
+│   ├── UserCard/
+│   ├── SearchBar/
+│   └── PostMeta/
+├── organisms/          # Complex components
+│   ├── PostCard/
+│   ├── CommentThread/
+│   ├── NavigationBar/
+│   └── CreatePostForm/
+├── templates/          # Page layouts
+│   ├── FeedLayout/
+│   ├── ProfileLayout/
+│   └── CommunityLayout/
+└── pages/              # Route components
+    ├── HomePage/
+    ├── CommunityPage/
+    ├── ProfilePage/
+    └── SettingsPage/
+```
+
+3.2 STATE MANAGEMENT ARCHITECTURE
+----------------------------------
+ZUSTAND + CONTEXT PATTERN (2025 Best Practice):
+```javascript
+// Global State Store Structure
+const useAppStore = create((set, get) => ({
+  // User State
+  user: {
+    profile: null,
+    preferences: {},
+    karma: { post: 0, comment: 0 }
+  },
+
+  // UI State
+  ui: {
+    theme: 'dark',
+    sidebarOpen: false,
+    activeModal: null
+  },
+
+  // Feed State
+  feed: {
+    posts: [],
+    sortBy: 'hot',
+    filters: {},
+    pagination: { page: 1, hasMore: true }
+  },
+
+  // Cache State
+  cache: {
+    users: new Map(),
+    communities: new Map(),
+    ttl: 300000 // 5 minutes
+  }
+}));
+```
+
+3.3 ROUTING ARCHITECTURE
+-------------------------
+FILE-BASED ROUTING STRUCTURE:
+```
+/routes/
+├── index.js                    # /
+├── c/
+│   └── [community]/
+│       ├── index.js           # /c/ai-coding
+│       ├── post/
+│       │   └── [postId].js    # /c/ai-coding/post/123
+│       └── submit.js          # /c/ai-coding/submit
+├── u/
+│   └── [username]/
+│       ├── index.js           # /u/johndoe
+│       └── posts.js           # /u/johndoe/posts
+└── settings/
+    ├── profile.js             # /settings/profile
+    └── preferences.js         # /settings/preferences
+```
+
+3.4 MODERN CSS ARCHITECTURE (2025)
+-----------------------------------
+CSS CONTAINER QUERIES & CASCADE LAYERS:
+```css
+/* Layer Setup */
+@layer reset, theme, base, components, utilities;
+
+/* Container Queries for Component Responsiveness */
+.post-card {
+  container-type: inline-size;
+  container-name: post;
+}
+
+@container post (min-width: 400px) {
+  .post-content {
+    grid-template-columns: auto 1fr;
+  }
+}
+
+/* Modern :has() Selector */
+.comment-thread:has(.highlighted) {
+  border-left: 3px solid var(--accent-color);
+}
+
+/* CSS Nesting (2025 Standard) */
+.navbar {
+  background: var(--surface-1);
+
+  .nav-item {
+    padding: var(--spacing-2);
+
+    &:hover {
+      background: var(--surface-2);
+    }
+
+    &:has(.badge) {
+      font-weight: bold;
+    }
+  }
+}
+```
+
+================================================================================
+4. BACKEND ARCHITECTURE (FIREBASE)
+================================================================================
+
+4.1 FIRESTORE DATABASE DESIGN
+------------------------------
+COLLECTION STRUCTURE:
+```
+/users/{userId}
+  - username: string
+  - email: string
+  - githubId: string
+  - gatech_verified: boolean
+  - karma: { post: number, comment: number }
+  - created_at: timestamp
+  - last_seen: timestamp
+  - preferences: map
+
+/communities/{communityId}
+  - name: string
+  - slug: string (unique, URL-friendly)
+  - description: string
+  - type: 'course' | 'project' | 'general'
+  - rules: array<string>
+  - moderators: array<userId>
+  - member_count: number
+  - created_at: timestamp
+  - settings: map
+
+/posts/{postId}
+  - author_id: userId
+  - community_id: communityId
+  - title: string
+  - content: string (Markdown)
+  - type: 'text' | 'link' | 'vibe-code' | 'project'
+  - score: number
+  - comment_count: number
+  - created_at: timestamp
+  - updated_at: timestamp
+  - tags: array<string>
+  - metadata: map
+
+/comments/{commentId}
+  - post_id: postId
+  - author_id: userId
+  - parent_id: commentId | null
+  - content: string (Markdown)
+  - score: number
+  - depth: number (0-5)
+  - created_at: timestamp
+  - edited_at: timestamp | null
+  - deleted: boolean
+
+/votes/{voteId}
+  - user_id: userId
+  - target_id: postId | commentId
+  - target_type: 'post' | 'comment'
+  - value: 1 | -1
+  - created_at: timestamp
+```
+
+4.2 FIREBASE FUNCTIONS ARCHITECTURE
+------------------------------------
+SERVERLESS FUNCTION STRUCTURE:
+```
+/functions/
+├── triggers/           # Firestore triggers
+│   ├── onPostCreate.js
+│   ├── onCommentCreate.js
+│   ├── onVoteChange.js
+│   └── onUserUpdate.js
+├── scheduled/          # Cron jobs
+│   ├── calculateHotScore.js
+│   ├── updateKarma.js
+│   └── cleanupDeleted.js
+├── http/              # HTTP endpoints
+│   ├── webhooks/
+│   │   ├── github.js
+│   │   └── stripe.js
+│   └── api/
+│       ├── search.js
+│       └── analytics.js
+└── utils/             # Shared utilities
+    ├── scoring.js
+    ├── validation.js
+    └── notifications.js
+```
+
+4.3 REAL-TIME SUBSCRIPTION ARCHITECTURE
+----------------------------------------
+LISTENER MANAGEMENT PATTERN:
+```javascript
+class SubscriptionManager {
+  constructor() {
+    this.subscriptions = new Map();
+    this.reconnectStrategy = new ExponentialBackoff();
+  }
+
+  subscribeToPosts(communityId, callback) {
+    const query = firestore
+      .collection('posts')
+      .where('community_id', '==', communityId)
+      .orderBy('created_at', 'desc')
+      .limit(25);
+
+    const unsubscribe = query.onSnapshot(
+      snapshot => {
+        const posts = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        callback(posts);
+      },
+      error => {
+        this.handleError(error);
+        this.scheduleReconnect(communityId);
+      }
+    );
+
+    this.subscriptions.set(communityId, unsubscribe);
+    return () => this.unsubscribe(communityId);
+  }
+}
+```
+
+================================================================================
+5. DATA MODELS & SCHEMAS
+================================================================================
+
+5.1 ENTITY RELATIONSHIP DIAGRAM
+--------------------------------
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│    USER     │     │  COMMUNITY  │     │    POST     │
+├─────────────┤     ├─────────────┤     ├─────────────┤
+│ id          │1   *│ id          │1   *│ id          │
+│ username    ├─────┤ name        ├─────┤ title       │
+│ email       │     │ slug        │     │ content     │
+│ karma       │     │ type        │     │ author_id   │
+│ verified    │     │ moderators[]│     │ community_id│
+└─────────────┘     └─────────────┘     │ score       │
+       │                                 │ created_at  │
+       │                                 └──────┬──────┘
+       │                                        │
+       │            ┌─────────────┐            │
+       │            │   COMMENT   │            │
+       │            ├─────────────┤            │
+       │           1│ id          │*           │
+       └────────────┤ post_id     ├────────────┘
+                    │ author_id   │
+                    │ parent_id   │
+                    │ content     │
+                    │ score       │
+                    └──────┬──────┘
+                           │
+                    ┌──────▼──────┐
+                    │    VOTE     │
+                    ├─────────────┤
+                    │ user_id     │
+                    │ target_id   │
+                    │ target_type │
+                    │ value       │
+                    └─────────────┘
+```
+
+5.2 DENORMALIZED DATA STRATEGIES
+---------------------------------
+READ OPTIMIZATION PATTERNS:
+
+1. USER PROFILE CACHE:
+```javascript
+// Denormalized in posts/comments
+post.author = {
+  id: userId,
+  username: 'johndoe',
+  avatar: 'https://...',
+  karma: 1234,
+  verified: true
+}
+```
+
+2. AGGREGATE COUNTERS:
+```javascript
+// Maintained via Cloud Functions
+community.stats = {
+  member_count: 1234,
+  post_count: 5678,
+  active_today: 89
+}
+```
+
+3. COMPUTED FIELDS:
+```javascript
+// Pre-calculated for sorting
+post.hot_score = calculateHotScore(score, created_at);
+post.controversy_score = calculateControversy(upvotes, downvotes);
+```
+
+5.3 INDEXING STRATEGY
+----------------------
+COMPOSITE INDEXES:
+```
+posts:
+  - (community_id, hot_score, created_at)
+  - (community_id, score, created_at)
+  - (author_id, created_at)
+  - (tags, created_at)
+
+comments:
+  - (post_id, created_at)
+  - (author_id, created_at)
+  - (parent_id, score)
+
+votes:
+  - (user_id, target_type, created_at)
+  - (target_id, target_type)
+```
+
+================================================================================
+6. AUTHENTICATION & AUTHORIZATION
+================================================================================
+
+6.1 AUTHENTICATION FLOW
+------------------------
+```
+┌──────┐      ┌──────────┐      ┌──────────┐      ┌──────────┐
+│ User │──1──▶│   App    │──2──▶│  GitHub  │──3──▶│ Firebase │
+└──────┘      └──────────┘      └──────────┘      └──────────┘
+                   │                   │                 │
+                   │◀──────────4───────┘                 │
+                   │                                      │
+                   │◀────────────5───────────────────────┘
+                   │
+              ┌────▼────┐
+              │  Token  │
+              │ Storage │
+              └─────────┘
+
+1. User clicks "Sign in with GitHub"
+2. App redirects to GitHub OAuth
+3. GitHub validates, returns to Firebase
+4. Firebase creates/updates user
+5. App receives auth token + user data
+```
+
+6.2 AUTHORIZATION MODEL
+------------------------
+ROLE-BASED ACCESS CONTROL (RBAC):
+```javascript
+// Security Rules Structure
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isModerator(communityId) {
+      return isAuthenticated() &&
+        request.auth.uid in get(/databases/$(database)/documents/
+          communities/$(communityId)).data.moderators;
+    }
+
+    function hasVerifiedEmail() {
+      return request.auth.token.email_verified == true;
+    }
+
+    function isGaTechStudent() {
+      return request.auth.token.email.matches('.*@gatech\.edu');
+    }
+
+    // Posts Rules
+    match /posts/{postId} {
+      allow read: if true;  // Public read
+      allow create: if isAuthenticated()
+        && request.resource.data.author_id == request.auth.uid;
+      allow update: if isOwner(resource.data.author_id)
+        || isModerator(resource.data.community_id);
+      allow delete: if isOwner(resource.data.author_id)
+        || isModerator(resource.data.community_id);
+    }
+  }
+}
+```
+
+6.3 TOKEN MANAGEMENT
+--------------------
+JWT TOKEN STRUCTURE:
+```javascript
+{
+  // Standard Claims
+  "iss": "https://securetoken.google.com/gt-community",
+  "aud": "gt-community",
+  "sub": "userId",
+  "iat": 1234567890,
+  "exp": 1234571490,
+
+  // Custom Claims
+  "email": "user@gatech.edu",
+  "email_verified": true,
+  "github_username": "johndoe",
+  "roles": ["student", "moderator"],
+  "gatech_verified": true,
+  "graduation_year": 2025
+}
+```
+
+================================================================================
+7. REAL-TIME FEATURES ARCHITECTURE
+================================================================================
+
+7.1 WEBSOCKET MANAGEMENT
+-------------------------
+CONNECTION LIFECYCLE:
+```javascript
+class RealtimeManager {
+  constructor() {
+    this.connections = new Map();
+    this.heartbeat = null;
+    this.reconnectAttempts = 0;
+  }
+
+  async connect() {
+    // 1. Establish WebSocket via Firebase
+    this.socket = firebase.firestore().enableNetwork();
+
+    // 2. Setup heartbeat
+    this.heartbeat = setInterval(() => {
+      this.ping();
+    }, 30000);
+
+    // 3. Handle connection state
+    firebase.firestore().onSnapshotsInSync(() => {
+      this.handleSync();
+    });
+  }
+
+  handleConnectionLoss() {
+    // Exponential backoff reconnection
+    const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000);
+    setTimeout(() => this.connect(), delay);
+    this.reconnectAttempts++;
+  }
+}
+```
+
+7.2 OPTIMISTIC UPDATE PATTERN
+------------------------------
+```javascript
+class OptimisticUpdateManager {
+  async upvotePost(postId) {
+    // 1. Optimistic local update
+    const tempId = generateTempId();
+    this.localStore.update(postId, {
+      score: current => current + 1,
+      userVoted: true,
+      pending: tempId
+    });
+
+    try {
+      // 2. Server update
+      await firebase.firestore()
+        .collection('votes')
+        .add({
+          user_id: currentUser.uid,
+          target_id: postId,
+          target_type: 'post',
+          value: 1
+        });
+
+      // 3. Confirm local update
+      this.localStore.confirmUpdate(tempId);
+
+    } catch (error) {
+      // 4. Rollback on failure
+      this.localStore.rollback(tempId);
+      this.showError('Vote failed');
+    }
+  }
+}
+```
+
+7.3 PRESENCE SYSTEM
+-------------------
+```javascript
+// Online presence tracking
+class PresenceSystem {
+  async trackPresence(userId) {
+    const userStatusRef = firebase.database()
+      .ref(`/status/${userId}`);
+
+    // Set online status
+    await userStatusRef.set({
+      state: 'online',
+      last_changed: firebase.database.ServerValue.TIMESTAMP
+    });
+
+    // Set offline on disconnect
+    userStatusRef.onDisconnect().set({
+      state: 'offline',
+      last_changed: firebase.database.ServerValue.TIMESTAMP
+    });
+  }
+}
+```
+
+================================================================================
+8. FILE STRUCTURE & ORGANIZATION
+================================================================================
+
+8.1 COMPLETE PROJECT STRUCTURE
+-------------------------------
+```
+gatech-reddit-system/
+├── src/
+│   ├── components/           # React/Vue/Svelte components
+│   │   ├── atoms/
+│   │   ├── molecules/
+│   │   ├── organisms/
+│   │   ├── templates/
+│   │   └── pages/
+│   ├── services/             # Business logic
+│   │   ├── auth/
+│   │   ├── api/
+│   │   ├── cache/
+│   │   ├── realtime/
+│   │   └── ai/
+│   ├── stores/               # State management
+│   │   ├── userStore.js
+│   │   ├── feedStore.js
+│   │   ├── communityStore.js
+│   │   └── uiStore.js
+│   ├── utils/                # Utilities
+│   │   ├── validators/
+│   │   ├── formatters/
+│   │   ├── algorithms/
+│   │   └── constants/
+│   ├── hooks/                # Custom hooks (React)
+│   │   ├── useAuth.js
+│   │   ├── useFirestore.js
+│   │   ├── useInfiniteScroll.js
+│   │   └── useDebounce.js
+│   ├── styles/               # CSS/SCSS
+│   │   ├── layers/
+│   │   ├── themes/
+│   │   ├── components/
+│   │   └── utilities/
+│   └── assets/               # Static assets
+│       ├── icons/
+│       ├── images/
+│       └── fonts/
+├── functions/                # Firebase Functions
+│   ├── src/
+│   │   ├── triggers/
+│   │   ├── scheduled/
+│   │   ├── http/
+│   │   └── utils/
+│   ├── package.json
+│   └── tsconfig.json
+├── public/                   # Static files
+│   ├── index.html
+│   ├── manifest.json
+│   ├── robots.txt
+│   └── service-worker.js
+├── config/                   # Configuration
+│   ├── firebase.config.js
+│   ├── webpack.config.js
+│   └── env.example
+├── scripts/                  # Build/deploy scripts
+│   ├── build.js
+│   ├── deploy.js
+│   └── seed-data.js
+├── tests/                    # Test files
+│   ├── unit/
+│   ├── integration/
+│   ├── e2e/
+│   └── fixtures/
+├── docs/                     # Documentation
+│   ├── API.md
+│   ├── CONTRIBUTING.md
+│   └── DEPLOYMENT.md
+├── .github/                  # GitHub config
+│   ├── workflows/
+│   └── ISSUE_TEMPLATE/
+├── firebase.json            # Firebase config
+├── firestore.rules          # Security rules
+├── firestore.indexes.json   # Index definitions
+├── package.json
+├── tsconfig.json
+├── .env.example
+└── README.md
+```
+
+8.2 MODULE ORGANIZATION
+------------------------
+FEATURE-BASED MODULES:
+```
+src/features/
+├── auth/
+│   ├── components/
+│   │   ├── LoginForm.jsx
+│   │   └── OAuthButton.jsx
+│   ├── services/
+│   │   └── authService.js
+│   ├── hooks/
+│   │   └── useAuth.js
+│   └── index.js
+├── posts/
+│   ├── components/
+│   │   ├── PostCard.jsx
+│   │   ├── CreatePost.jsx
+│   │   └── PostFeed.jsx
+│   ├── services/
+│   │   └── postService.js
+│   ├── hooks/
+│   │   └── usePosts.js
+│   └── index.js
+└── vibeCode/
+    ├── components/
+    │   ├── CodeEditor.jsx
+    │   ├── AIPromptInput.jsx
+    │   └── CodeReview.jsx
+    ├── services/
+    │   └── aiService.js
+    └── index.js
+```
+
+================================================================================
+9. SECURITY ARCHITECTURE
+================================================================================
+
+9.1 SECURITY LAYERS
+-------------------
+```
+┌─────────────────────────────────────────┐
+│         EDGE SECURITY (Cloudflare)      │
+│   DDoS Protection | Rate Limiting       │
+└────────────────┬────────────────────────┘
+                 │
+┌────────────────▼────────────────────────┐
+│      APPLICATION SECURITY (Firebase)     │
+│   Security Rules | Input Validation      │
+└────────────────┬────────────────────────┘
+                 │
+┌────────────────▼────────────────────────┐
+│         DATA SECURITY (Firestore)        │
+│   Encryption | Access Control            │
+└────────────────┬────────────────────────┘
+                 │
+┌────────────────▼────────────────────────┐
+│       AUTHENTICATION (OAuth/JWT)         │
+│   Token Validation | Session Management  │
+└──────────────────────────────────────────┘
+```
+
+9.2 SECURITY MEASURES
+---------------------
+INPUT SANITIZATION:
+```javascript
+class SecurityService {
+  sanitizeInput(input, type) {
+    switch(type) {
+      case 'markdown':
+        return DOMPurify.sanitize(input, {
+          ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'code', 'pre'],
+          ALLOWED_ATTR: ['href', 'class']
+        });
+
+      case 'username':
+        return input.replace(/[^a-zA-Z0-9_-]/g, '');
+
+      case 'url':
+        try {
+          const url = new URL(input);
+          return ['http:', 'https:'].includes(url.protocol) ? input : null;
+        } catch {
+          return null;
+        }
+    }
+  }
+
+  validateCSRFToken(token) {
+    return crypto.subtle.verify(
+      'HMAC',
+      this.serverKey,
+      token,
+      this.sessionId
+    );
+  }
+}
+```
+
+9.3 CONTENT SECURITY POLICY
+----------------------------
+```javascript
+// CSP Headers for 2025
+const cspPolicy = {
+  'default-src': ["'self'"],
+  'script-src': ["'self'", "'unsafe-inline'", 'https://apis.google.com'],
+  'style-src': ["'self'", "'unsafe-inline'"],
+  'img-src': ["'self'", 'data:', 'https:'],
+  'connect-src': ["'self'", 'https://firebaseapp.com', 'wss://'],
+  'font-src': ["'self'"],
+  'object-src': ["'none'"],
+  'media-src': ["'self'"],
+  'frame-src': ["'none'"],
+  'base-uri': ["'self'"],
+  'form-action': ["'self'"],
+  'frame-ancestors': ["'none'"],
+  'upgrade-insecure-requests': [],
+  'block-all-mixed-content': []
+};
+```
+
+================================================================================
+10. PERFORMANCE & SCALABILITY
+================================================================================
+
+10.1 PERFORMANCE OPTIMIZATION STRATEGIES
+-----------------------------------------
+LAZY LOADING IMPLEMENTATION:
+```javascript
+// Route-based code splitting
+const routes = [
+  {
+    path: '/',
+    component: () => import('./pages/Home.jsx')
+  },
+  {
+    path: '/c/:community',
+    component: () => import('./pages/Community.jsx')
+  },
+  {
+    path: '/vibe-code',
+    component: () => import('./pages/VibeCode.jsx')
+  }
+];
+
+// Image lazy loading with Intersection Observer
+class ImageLazyLoader {
+  constructor() {
+    this.observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const img = entry.target;
+            img.src = img.dataset.src;
+            this.observer.unobserve(img);
+          }
+        });
+      },
+      { rootMargin: '50px' }
+    );
+  }
+}
+```
+
+10.2 CACHING STRATEGY
+---------------------
+MULTI-LAYER CACHE:
+```
+┌─────────────────────────────────────────┐
+│          BROWSER CACHE (L1)             │
+│   Service Worker | LocalStorage          │
+└────────────────┬────────────────────────┘
+                 │
+┌────────────────▼────────────────────────┐
+│           CDN CACHE (L2)                │
+│   Cloudflare Edge | 5min TTL            │
+└────────────────┬────────────────────────┘
+                 │
+┌────────────────▼────────────────────────┐
+│        FIREBASE CACHE (L3)              │
+│   Firestore Offline | Real-time         │
+└──────────────────────────────────────────┘
+```
+
+CACHE INVALIDATION:
+```javascript
+class CacheManager {
+  constructor() {
+    this.caches = {
+      posts: new TTLCache(300000),    // 5 minutes
+      users: new TTLCache(600000),    // 10 minutes
+      static: new TTLCache(3600000)   // 1 hour
+    };
+  }
+
+  invalidatePattern(pattern) {
+    Object.keys(this.caches).forEach(cache => {
+      this.caches[cache].invalidatePattern(pattern);
+    });
+  }
+}
+```
+
+10.3 SCALABILITY METRICS
+------------------------
+CAPACITY PLANNING:
+```
+Phase 1 (100 users):
+- Firestore: ~10K reads/day (free tier)
+- Storage: ~100MB
+- Bandwidth: ~1GB/month
+- Cost: $0
+
+Phase 2 (1,000 users):
+- Firestore: ~100K reads/day
+- Storage: ~1GB
+- Bandwidth: ~10GB/month
+- Cost: ~$25/month
+
+Phase 3 (10,000 users):
+- Firestore: ~1M reads/day
+- Storage: ~10GB
+- Bandwidth: ~100GB/month
+- Cost: ~$250/month
+
+Scaling Strategies:
+1. Implement aggressive caching
+2. Denormalize hot data paths
+3. Use Firebase Functions for heavy computation
+4. Implement pagination (25 items/page)
+5. Archive old content to cold storage
+```
+
+================================================================================
+11. DEPLOYMENT ARCHITECTURE
+================================================================================
+
+11.1 CI/CD PIPELINE
+-------------------
+```yaml
+# GitHub Actions Workflow
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: npm ci
+      - run: npm test
+      - run: npm run test:e2e
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-artifact@v3
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v3
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SA }}'
+          channelId: live
+```
+
+11.2 ENVIRONMENT CONFIGURATION
+-------------------------------
+```javascript
+// Environment-specific configs
+const config = {
+  development: {
+    firebaseConfig: { /* dev project */ },
+    apiUrl: 'http://localhost:5001',
+    features: {
+      vibeCode: true,
+      ai: true,
+      analytics: false
+    }
+  },
+  staging: {
+    firebaseConfig: { /* staging project */ },
+    apiUrl: 'https://staging-api.gt-community.com',
+    features: {
+      vibeCode: true,
+      ai: true,
+      analytics: true
+    }
+  },
+  production: {
+    firebaseConfig: { /* prod project */ },
+    apiUrl: 'https://api.gt-community.com',
+    features: {
+      vibeCode: true,
+      ai: true,
+      analytics: true
+    }
+  }
+};
+```
+
+11.3 MONITORING & OBSERVABILITY
+--------------------------------
+```javascript
+// Observability Stack
+class MonitoringService {
+  constructor() {
+    // Firebase Performance Monitoring
+    this.perf = firebase.performance();
+
+    // Custom metrics
+    this.metrics = {
+      pageLoads: new Counter(),
+      apiLatency: new Histogram(),
+      errorRate: new Gauge()
+    };
+
+    // Error tracking
+    this.initSentry();
+  }
+
+  trackPerformance(name, fn) {
+    const trace = this.perf.trace(name);
+    trace.start();
+
+    try {
+      const result = fn();
+      trace.putAttribute('success', 'true');
+      return result;
+    } catch (error) {
+      trace.putAttribute('success', 'false');
+      this.logError(error);
+      throw error;
+    } finally {
+      trace.stop();
+    }
+  }
+}
+```
+
+================================================================================
+12. TECHNOLOGY STACK JUSTIFICATION
+================================================================================
+
+12.1 FRONTEND TECHNOLOGIES (2025)
+----------------------------------
+WEB COMPONENTS + MODERN JS:
+- Why: Native browser support, no framework lock-in
+- Features: Shadow DOM, Custom Elements, ES2025
+- Alternative considered: React 19, but adds 45KB bundle
+
+VANILLA JS WITH SIGNALS (TC39 Stage 3):
+- Why: Native reactivity coming in ES2025
+- Performance: No virtual DOM overhead
+- Bundle size: 0KB framework code
+
+CSS CONTAINER QUERIES & LAYERS:
+- Why: Component-level responsiveness
+- Browser support: 95%+ in 2025
+- Eliminates media query complexity
+
+12.2 BACKEND TECHNOLOGIES
+--------------------------
+FIREBASE (V10+):
+- Why: Fastest time-to-market for MVP
+- Real-time: Built-in WebSocket management
+- Scale: Auto-scaling to millions of users
+- Cost: Generous free tier for startup
+
+ALTERNATIVES EVALUATED:
+```
+Supabase:
+  Pros: PostgreSQL, open-source
+  Cons: Less mature, self-hosting complexity
+  Decision: Revisit if SQL needs arise
+
+AWS Amplify:
+  Pros: Full AWS ecosystem
+  Cons: Complex, expensive, steep learning curve
+  Decision: Overkill for MVP
+
+Custom Node.js + MongoDB:
+  Pros: Full control, flexible
+  Cons: 3-6 month longer development
+  Decision: Consider for v2 if needed
+```
+
+12.3 AI INTEGRATION (2025)
+---------------------------
+CLAUDE API (PRIMARY):
+- Code generation quality superior
+- 200K context window
+- Function calling support
+- $15/1M tokens (2025 pricing)
+
+LOCAL MODELS (SECONDARY):
+- Llama 3.2 for simple tasks
+- WebGPU acceleration in browser
+- Privacy-preserving
+- No API costs
+
+================================================================================
+13. ARCHITECTURE DECISION RECORDS (ADRs)
+================================================================================
+
+13.1 ADR-001: FIREBASE OVER CUSTOM BACKEND
+--------------------------------------------
+STATUS: Accepted
+DATE: September 2025
+
+CONTEXT:
+Need to build MVP quickly with limited resources while maintaining
+ability to scale to 10,000+ users.
+
+DECISION:
+Use Firebase BaaS instead of custom backend.
+
+CONSEQUENCES:
++ 3-4 month faster development
++ Built-in real-time capabilities
++ Automatic scaling
++ Reduced operational overhead
+- Vendor lock-in risk
+- Limited query capabilities
+- Higher cost at scale
+
+MITIGATION:
+- Abstract Firebase behind repository pattern
+- Maintain data export scripts
+- Plan migration path for v2 if needed
+
+13.2 ADR-002: PROGRESSIVE WEB APP
+----------------------------------
+STATUS: Accepted
+DATE: September 2025
+
+CONTEXT:
+Mobile usage is 70%+ for social platforms. Native app development
+would double timeline and cost.
+
+DECISION:
+Build as PWA with offline capabilities.
+
+CONSEQUENCES:
++ Single codebase for all platforms
++ App store distribution optional
++ Instant updates without app store approval
++ Offline functionality
+- No native APIs (push notifications limited)
+- iOS limitations (install prompts)
+
+13.3 ADR-003: NOSQL DOCUMENT STORE
+-----------------------------------
+STATUS: Accepted
+DATE: September 2025
+
+CONTEXT:
+Reddit-style data is hierarchical (posts->comments) and benefits
+from denormalization for read performance.
+
+DECISION:
+Use Firestore document database instead of relational.
+
+CONSEQUENCES:
++ Natural fit for nested data
++ Horizontal scaling built-in
++ Real-time listeners native
+- Complex queries require workarounds
+- No ACID transactions across collections
+- Denormalization increases storage
+
+================================================================================
+14. MIGRATION & EVOLUTION STRATEGY
+================================================================================
+
+14.1 PHASED MIGRATION APPROACH
+-------------------------------
+PHASE 1: MVP LAUNCH (Months 1-3)
+- Core Reddit features
+- Single community
+- Basic moderation
+- GitHub auth only
+
+PHASE 2: COMMUNITY EXPANSION (Months 4-6)
+- Multiple communities
+- Course integration
+- Google auth
+- Enhanced moderation
+
+PHASE 3: AI FEATURES (Months 7-9)
+- Vibe-code playground
+- AI assistants
+- Code review automation
+- Prompt templates
+
+PHASE 4: SCALE & OPTIMIZE (Months 10-12)
+- Performance optimization
+- Cost reduction
+- Advanced caching
+- Analytics dashboard
+
+14.2 TECHNICAL DEBT MANAGEMENT
+-------------------------------
+DEBT CATEGORIES:
+1. ACCEPTABLE DEBT (MVP shortcuts):
+   - Inline styles in some components
+   - Limited test coverage (60%)
+   - Manual deployment steps
+
+2. MUST-FIX DEBT (Before scale):
+   - Security rule gaps
+   - Missing input validation
+   - No rate limiting
+
+3. OPTIMIZATION DEBT (Performance):
+   - Bundle size reduction
+   - Query optimization
+   - Cache invalidation
+
+PAYBACK SCHEDULE:
+- Sprint 1-4: Feature development (accumulate debt)
+- Sprint 5: Security debt payback
+- Sprint 6-8: Feature development
+- Sprint 9: Performance debt payback
+- Sprint 10-12: Feature development
+- Sprint 13: Full debt sprint
+
+14.3 EVOLUTIONARY ARCHITECTURE
+-------------------------------
+FITNESS FUNCTIONS:
+```javascript
+// Architectural fitness tests
+describe('Architecture Fitness', () => {
+  test('Bundle size < 200KB', () => {
+    expect(bundleSize).toBeLessThan(200000);
+  });
+
+  test('Page load < 2 seconds', () => {
+    expect(loadTime).toBeLessThan(2000);
+  });
+
+  test('Lighthouse score > 90', () => {
+    expect(lighthouseScore).toBeGreaterThan(90);
+  });
+
+  test('Security headers present', () => {
+    expect(headers).toContain('Content-Security-Policy');
+    expect(headers).toContain('X-Frame-Options');
+  });
+});
+```
+
+EVOLUTION TRIGGERS:
+- User count > 1,000: Implement CDN caching
+- User count > 5,000: Add read replicas
+- User count > 10,000: Consider microservices
+- Cost > $500/month: Optimize queries
+- Response time > 500ms: Add caching layer
+
+================================================================================
+CONCLUSION
+================================================================================
+
+This architecture provides a solid foundation for building a scalable,
+modern Reddit-style platform optimized for the Georgia Tech AI and
+Vibe-Coding community. Key architectural decisions prioritize:
+
+1. RAPID DEVELOPMENT: Firebase + PWA enables 3-month MVP
+2. SCALABILITY: Serverless architecture scales automatically
+3. REAL-TIME: Native WebSocket support via Firebase
+4. COST-EFFECTIVE: Free tier supports first 1000 users
+5. FUTURE-PROOF: Abstraction layers enable migration
+6. AI-READY: Architecture supports AI integration from day one
+
+The system is designed to evolve from 100 to 10,000+ users without
+major architectural changes, while maintaining sub-2-second load times
+and 99.9% availability.
+
+Next steps:
+1. Review and approve architecture
+2. Set up Firebase project
+3. Initialize repository structure
+4. Begin Sprint 1 development
+
+================================================================================
+END OF ARCHITECTURE DOCUMENT
+================================================================================

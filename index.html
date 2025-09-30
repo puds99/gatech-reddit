@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Georgia Tech AI & Vibe-Coding Community Platform - Connect, collaborate, and innovate with GT's tech community">
+    <meta name="keywords" content="Georgia Tech, AI, Vibe-Coding, Machine Learning, Computer Science, Community">
+    <meta name="author" content="GT AI Community">
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#B3A369">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="GT AI Hub">
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://gt-ai-community.com">
+    <meta property="og:title" content="GT AI & Vibe-Coding Hub">
+    <meta property="og:description" content="The premier community platform for Georgia Tech students and alumni in AI and modern development">
+    <meta property="og:image" content="/assets/og-image.png">
+
+    <!-- Twitter Card -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://gt-ai-community.com">
+    <meta property="twitter:title" content="GT AI & Vibe-Coding Hub">
+    <meta property="twitter:description" content="Connect with Georgia Tech's AI community">
+
+    <title>GT AI & Vibe-Coding Hub - Georgia Tech's AI Community Platform</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+    <!-- CSS Files (to be created) -->
+    <link rel="stylesheet" href="/styles/main.css">
+
+    <!-- Preconnect to optimize performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://firebaseapp.com">
+
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Skip to main content for accessibility -->
+    <a href="#main" class="skip-link">Skip to main content</a>
+
+    <!-- Header Navigation -->
+    <header class="site-header" role="banner">
+        <nav class="navbar" aria-label="Main navigation">
+            <div class="nav-container">
+                <div class="nav-brand">
+                    <a href="/" class="logo" aria-label="GT AI Hub Home">
+                        <svg class="logo-icon" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">
+                            <!-- GT Logo placeholder -->
+                            <rect width="32" height="32" fill="#B3A369"/>
+                        </svg>
+                        <span class="logo-text">GT AI Hub</span>
+                    </a>
+                </div>
+
+                <div class="nav-actions">
+                    <button class="btn btn-primary" id="github-login" aria-label="Sign in with GitHub">
+                        <svg class="btn-icon" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill="currentColor" d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.44 9.81 8.21 11.4.6.11.82-.26.82-.58v-2.18c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.21.08 1.84 1.24 1.84 1.24 1.07 1.84 2.81 1.31 3.5 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23.96-.27 1.98-.4 3-.4s2.04.13 3 .4c2.29-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.69.83.58C20.56 21.81 24 17.31 24 12c0-6.63-5.37-12-12-12"/>
+                        </svg>
+                        Sign in with GitHub
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main id="main" role="main">
+        <!-- Hero Section -->
+        <section class="hero" aria-labelledby="hero-title">
+            <div class="hero-container">
+                <div class="hero-content">
+                    <h1 id="hero-title" class="hero-title">
+                        Welcome to Georgia Tech's<br>
+                        <span class="hero-highlight">AI & Vibe-Coding</span> Community
+                    </h1>
+                    <p class="hero-description">
+                        Connect with fellow Yellow Jackets pushing the boundaries of AI-assisted development.
+                        Share projects, collaborate on research, and shape the future of coding at GT.
+                    </p>
+                    <div class="hero-actions">
+                        <button class="btn btn-large btn-github" id="hero-github-auth" aria-label="Join with GitHub account">
+                            <svg class="btn-icon" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+                                <path fill="currentColor" d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.44 9.81 8.21 11.4.6.11.82-.26.82-.58v-2.18c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.21.08 1.84 1.24 1.84 1.24 1.07 1.84 2.81 1.31 3.5 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23.96-.27 1.98-.4 3-.4s2.04.13 3 .4c2.29-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.69.83.58C20.56 21.81 24 17.31 24 12c0-6.63-5.37-12-12-12"/>
+                            </svg>
+                            Join with GitHub
+                        </button>
+                        <button class="btn btn-large btn-secondary" id="hero-google-auth" aria-label="Join with Google account">
+                            <svg class="btn-icon" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+                                <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                            </svg>
+                            Join with @gatech.edu
+                        </button>
+                    </div>
+                    <p class="hero-note">
+                        <small>Free for all GA Tech students and alumni. No spam, ever.</small>
+                    </p>
+                </div>
+                <div class="hero-visual" aria-hidden="true">
+                    <!-- Decorative element -->
+                    <div class="hero-graphic">
+                        <div class="code-snippet">
+                            <pre><code># Vibe-Coding at Georgia Tech
+def build_future():
+    """AI-assisted development"""
+    ideas = generate_ideas()
+    code = ai.transform(ideas)
+    return innovate(code)</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features" aria-labelledby="features-title">
+            <div class="container">
+                <h2 id="features-title" class="section-title">Built for the GT Community</h2>
+                <div class="features-grid">
+                    <article class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">
+                            <svg width="48" height="48" viewBox="0 0 48 48">
+                                <circle cx="24" cy="24" r="20" fill="#B3A369" opacity="0.2"/>
+                                <path d="M24 14v20M14 24h20" stroke="#B3A369" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <h3 class="feature-title">Vibe-Coding Playground</h3>
+                        <p class="feature-description">
+                            Share and collaborate on AI-generated code. Learn from the community's best prompts and techniques.
+                        </p>
+                    </article>
+
+                    <article class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">
+                            <svg width="48" height="48" viewBox="0 0 48 48">
+                                <circle cx="24" cy="24" r="20" fill="#003057" opacity="0.2"/>
+                                <rect x="14" y="18" width="20" height="12" stroke="#003057" stroke-width="2" fill="none"/>
+                            </svg>
+                        </div>
+                        <h3 class="feature-title">Course Communities</h3>
+                        <p class="feature-description">
+                            Dedicated spaces for CS courses. Get help, share resources, and connect with TAs and professors.
+                        </p>
+                    </article>
+
+                    <article class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">
+                            <svg width="48" height="48" viewBox="0 0 48 48">
+                                <circle cx="24" cy="24" r="20" fill="#54585A" opacity="0.2"/>
+                                <path d="M24 14l6 10-6 10-6-10z" stroke="#54585A" stroke-width="2" fill="none"/>
+                            </svg>
+                        </div>
+                        <h3 class="feature-title">Project Showcases</h3>
+                        <p class="feature-description">
+                            Display your hackathon projects, research, and personal builds. Get feedback from the community.
+                        </p>
+                    </article>
+
+                    <article class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">
+                            <svg width="48" height="48" viewBox="0 0 48 48">
+                                <circle cx="24" cy="24" r="20" fill="#B3A369" opacity="0.2"/>
+                                <circle cx="24" cy="20" r="4" stroke="#B3A369" stroke-width="2" fill="none"/>
+                                <path d="M16 32c0-4 3.5-7 8-7s8 3 8 7" stroke="#B3A369" stroke-width="2" fill="none"/>
+                            </svg>
+                        </div>
+                        <h3 class="feature-title">Alumni Network</h3>
+                        <p class="feature-description">
+                            Connect with GT alumni in top tech companies. Get mentorship, referrals, and career guidance.
+                        </p>
+                    </article>
+
+                    <article class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">
+                            <svg width="48" height="48" viewBox="0 0 48 48">
+                                <circle cx="24" cy="24" r="20" fill="#003057" opacity="0.2"/>
+                                <path d="M20 24l4 4 8-8" stroke="#003057" stroke-width="2" fill="none"/>
+                            </svg>
+                        </div>
+                        <h3 class="feature-title">Verified Profiles</h3>
+                        <p class="feature-description">
+                            GT email verification ensures authentic community. Know you're talking to real Yellow Jackets.
+                        </p>
+                    </article>
+
+                    <article class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">
+                            <svg width="48" height="48" viewBox="0 0 48 48">
+                                <circle cx="24" cy="24" r="20" fill="#54585A" opacity="0.2"/>
+                                <rect x="18" y="14" width="12" height="20" stroke="#54585A" stroke-width="2" fill="none"/>
+                            </svg>
+                        </div>
+                        <h3 class="feature-title">Mobile-First PWA</h3>
+                        <p class="feature-description">
+                            Install as an app on any device. Works offline, sends notifications, and loads instantly.
+                        </p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="stats" aria-labelledby="stats-title">
+            <div class="container">
+                <h2 id="stats-title" class="visually-hidden">Community Statistics</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" aria-label="Active users">
+                            <span class="stat-value">0</span>
+                        </div>
+                        <div class="stat-label">Active Users</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" aria-label="Posts today">
+                            <span class="stat-value">0</span>
+                        </div>
+                        <div class="stat-label">Posts Today</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" aria-label="Communities">
+                            <span class="stat-value">0</span>
+                        </div>
+                        <div class="stat-label">Communities</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" aria-label="Code snippets shared">
+                            <span class="stat-value">0</span>
+                        </div>
+                        <div class="stat-label">Vibe-Codes Shared</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta" aria-labelledby="cta-title">
+            <div class="container">
+                <div class="cta-content">
+                    <h2 id="cta-title" class="cta-title">Ready to Join the Movement?</h2>
+                    <p class="cta-description">
+                        Be part of Georgia Tech's premier AI and Vibe-Coding community.
+                        Connect, learn, and build the future together.
+                    </p>
+                    <div class="cta-actions">
+                        <button class="btn btn-large btn-primary" id="cta-join">Join Now</button>
+                        <a href="/about" class="btn btn-large btn-outline">Learn More</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer" role="contentinfo">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">
+                            <rect width="32" height="32" fill="#B3A369"/>
+                        </svg>
+                        <span>GT AI Hub</span>
+                    </div>
+                    <p class="footer-tagline">
+                        Built by Yellow Jackets, for Yellow Jackets
+                    </p>
+                </div>
+
+                <nav class="footer-nav" aria-label="Footer navigation">
+                    <div class="footer-column">
+                        <h3 class="footer-heading">Platform</h3>
+                        <ul class="footer-links">
+                            <li><a href="/features">Features</a></li>
+                            <li><a href="/communities">Communities</a></li>
+                            <li><a href="/vibe-coding">Vibe-Coding</a></li>
+                            <li><a href="/showcase">Projects</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-column">
+                        <h3 class="footer-heading">Resources</h3>
+                        <ul class="footer-links">
+                            <li><a href="/docs">Documentation</a></li>
+                            <li><a href="/api">API</a></li>
+                            <li><a href="/guidelines">Guidelines</a></li>
+                            <li><a href="/support">Support</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-column">
+                        <h3 class="footer-heading">Community</h3>
+                        <ul class="footer-links">
+                            <li><a href="/about">About</a></li>
+                            <li><a href="/blog">Blog</a></li>
+                            <li><a href="/events">Events</a></li>
+                            <li><a href="/contact">Contact</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-column">
+                        <h3 class="footer-heading">Legal</h3>
+                        <ul class="footer-links">
+                            <li><a href="/privacy">Privacy Policy</a></li>
+                            <li><a href="/terms">Terms of Service</a></li>
+                            <li><a href="/code-of-conduct">Code of Conduct</a></li>
+                            <li><a href="/security">Security</a></li>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+
+            <div class="footer-bottom">
+                <p class="footer-copyright">
+                    &copy; 2025 Georgia Tech AI & Vibe-Coding Community. Not officially affiliated with Georgia Institute of Technology.
+                </p>
+                <div class="footer-social">
+                    <a href="https://github.com/gt-ai-hub" aria-label="GitHub" rel="noopener noreferrer">
+                        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill="currentColor" d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.44 9.81 8.21 11.4.6.11.82-.26.82-.58v-2.18c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.21.08 1.84 1.24 1.84 1.24 1.07 1.84 2.81 1.31 3.5 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23.96-.27 1.98-.4 3-.4s2.04.13 3 .4c2.29-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.69.83.58C20.56 21.81 24 17.31 24 12c0-6.63-5.37-12-12-12"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts (to be created) -->
+    <script src="/js/main.js" defer></script>
+</body>
+</html>

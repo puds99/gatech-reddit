@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="User profile on GT AI Hub">
+    <meta name="keywords" content="Georgia Tech, Profile, User, Posts, Comments">
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#B3A369">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+    <title>Username - GT AI & Vibe-Coding Hub</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="/styles/main.css">
+
+    <!-- Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://firebaseapp.com">
+
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="profile-page">
+    <!-- Skip to main content -->
+    <a href="#main" class="skip-link">Skip to main content</a>
+
+    <!-- Header Navigation -->
+    <header class="site-header" role="banner">
+        <nav class="navbar" aria-label="Main navigation">
+            <div class="nav-container">
+                <div class="nav-left">
+                    <a href="/feed.html" class="back-button" aria-label="Back to feed">
+                        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                        </svg>
+                    </a>
+                    <a href="/" class="logo" aria-label="GT AI Hub Home">
+                        <svg class="logo-icon" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">
+                            <rect width="32" height="32" fill="#B3A369"/>
+                        </svg>
+                        <span class="logo-text">GT AI Hub</span>
+                    </a>
+                </div>
+                <div class="nav-right">
+                    <button class="icon-button notifications-button" aria-label="Notifications">
+                        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill="currentColor" d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+                        </svg>
+                    </button>
+                    <button class="user-menu-toggle" aria-label="User menu">
+                        <img src="/assets/default-avatar.png" alt="" class="user-avatar" width="32" height="32">
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main id="main" class="profile-main" role="main">
+        <!-- Profile Header -->
+        <section class="profile-header" aria-labelledby="profile-name">
+            <div class="profile-banner" style="background: linear-gradient(135deg, #B3A369 0%, #003057 100%);">
+                <!-- Banner image or gradient -->
+            </div>
+            <div class="profile-info-container">
+                <div class="profile-info">
+                    <div class="profile-avatar-section">
+                        <img src="/assets/default-avatar.png" alt="Profile avatar" class="profile-avatar" width="120" height="120">
+                        <button class="edit-avatar-button" aria-label="Change avatar" hidden>
+                            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                                <path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="profile-details">
+                        <h1 id="profile-name" class="profile-name">
+                            John Doe
+                            <span class="verified-badge" title="Verified Georgia Tech Student">
+                                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill="#B3A369" d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                                    <path fill="white" d="M10 17l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8z"/>
+                                </svg>
+                            </span>
+                        </h1>
+                        <div class="profile-username">u/johndoe</div>
+                        <div class="profile-bio">
+                            CS Major '25 | AI Researcher | Building the future with Vibe-Coding
+                        </div>
+                        <div class="profile-metadata">
+                            <div class="profile-stat">
+                                <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill="currentColor" d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                                </svg>
+                                Joined September 2021
+                            </div>
+                            <div class="profile-stat">
+                                <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill="currentColor" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                                </svg>
+                                Atlanta, GA
+                            </div>
+                            <div class="profile-stat">
+                                <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill="currentColor" d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.44 9.81 8.21 11.4.6.11.82-.26.82-.58v-2.18c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.21.08 1.84 1.24 1.84 1.24 1.07 1.84 2.81 1.31 3.5 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23.96-.27 1.98-.4 3-.4s2.04.13 3 .4c2.29-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.69.83.58C20.56 21.81 24 17.31 24 12c0-6.63-5.37-12-12-12"/>
+                                </svg>
+                                <a href="https://github.com/johndoe" rel="noopener noreferrer">github.com/johndoe</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="profile-actions">
+                        <button class="btn btn-primary" id="follow-button" aria-pressed="false">
+                            Follow
+                        </button>
+                        <button class="btn btn-secondary" aria-label="Send message">
+                            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                                <path fill="currentColor" d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                            </svg>
+                            Message
+                        </button>
+                        <button class="icon-button" aria-label="More options">
+                            <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+                                <path fill="currentColor" d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Karma Stats -->
+                <div class="karma-stats">
+                    <div class="karma-card">
+                        <div class="karma-value">4,567</div>
+                        <div class="karma-label">Post Karma</div>
+                    </div>
+                    <div class="karma-card">
+                        <div class="karma-value">12,890</div>
+                        <div class="karma-label">Comment Karma</div>
+                    </div>
+                    <div class="karma-card">
+                        <div class="karma-value">234</div>
+                        <div class="karma-label">Awards Received</div>
+                    </div>
+                    <div class="karma-card">
+                        <div class="karma-value">89</div>
+                        <div class="karma-label">Vibe-Codes Shared</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Profile Content -->
+        <div class="profile-content">
+            <!-- Tabs Navigation -->
+            <nav class="profile-tabs" role="tablist" aria-label="Profile sections">
+                <button role="tab" aria-selected="true" aria-controls="posts-panel" id="posts-tab" class="tab-button active">
+                    Posts
+                </button>
+                <button role="tab" aria-selected="false" aria-controls="comments-panel" id="comments-tab" class="tab-button">
+                    Comments
+                </button>
+                <button role="tab" aria-selected="false" aria-controls="saved-panel" id="saved-tab" class="tab-button">
+                    Saved
+                </button>
+                <button role="tab" aria-selected="false" aria-controls="about-panel" id="about-tab" class="tab-button">
+                    About
+                </button>
+                <button role="tab" aria-selected="false" aria-controls="awards-panel" id="awards-tab" class="tab-button">
+                    Awards
+                </button>
+            </nav>
+
+            <!-- Tab Panels -->
+            <div class="tab-panels">
+                <!-- Posts Panel -->
+                <div role="tabpanel" id="posts-panel" aria-labelledby="posts-tab" class="tab-panel active">
+                    <!-- Sort Options -->
+                    <div class="panel-header">
+                        <select class="sort-select" aria-label="Sort posts">
+                            <option value="new">New</option>
+                            <option value="top">Top</option>
+                            <option value="hot">Hot</option>
+                        </select>
+                    </div>
+
+                    <!-- Posts List -->
+                    <div class="posts-list">
+                        <article class="post-card compact">
+                            <div class="post-voting">
+                                <button class="vote-button upvote" aria-label="Upvote">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path fill="currentColor" d="M7 14l5-5 5 5z"/>
+                                    </svg>
+                                </button>
+                                <span class="vote-score">234</span>
+                                <button class="vote-button downvote" aria-label="Downvote">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path fill="currentColor" d="M7 10l5 5 5-5z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="post-content">
+                                <div class="post-header">
+                                    <a href="/c/ai-coding" class="post-community">c/ai-coding</a>
+                                    <span class="post-meta-separator">•</span>
+                                    <time datetime="2025-09-29T10:00:00Z">Yesterday</time>
+                                    <span class="post-flair vibe-code">Vibe-Code</span>
+                                </div>
+                                <h3 class="post-title">
+                                    <a href="/post/123">My experience building a Chrome extension with pure Vibe-Coding</a>
+                                </h3>
+                                <div class="post-footer">
+                                    <a href="/post/123" class="post-action">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path fill="currentColor" d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z"/>
+                                        </svg>
+                                        45 comments
+                                    </a>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="post-card compact">
+                            <div class="post-voting">
+                                <button class="vote-button upvote" aria-label="Upvote">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path fill="currentColor" d="M7 14l5-5 5 5z"/>
+                                    </svg>
+                                </button>
+                                <span class="vote-score">567</span>
+                                <button class="vote-button downvote" aria-label="Downvote">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path fill="currentColor" d="M7 10l5 5 5-5z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="post-content">
+                                <div class="post-header">
+                                    <a href="/c/cs7641" class="post-community">c/cs7641</a>
+                                    <span class="post-meta-separator">•</span>
+                                    <time datetime="2025-09-28T10:00:00Z">2 days ago</time>
+                                </div>
+                                <h3 class="post-title">
+                                    <a href="/post/124">CS 7641 Project 2 - Neural Network Implementation Tips</a>
+                                </h3>
+                                <div class="post-footer">
+                                    <a href="/post/124" class="post-action">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path fill="currentColor" d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z"/>
+                                        </svg>
+                                        89 comments
+                                    </a>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+
+                    <button class="load-more-button">Load More Posts</button>
+                </div>
+
+                <!-- Comments Panel -->
+                <div role="tabpanel" id="comments-panel" aria-labelledby="comments-tab" class="tab-panel" hidden>
+                    <div class="comments-list">
+                        <article class="comment-item">
+                            <header class="comment-item-header">
+                                <a href="/post/456" class="comment-post-link">
+                                    Re: Best practices for prompt engineering in production
+                                </a>
+                                <time datetime="2025-09-30T08:00:00Z">2 hours ago</time>
+                            </header>
+                            <div class="comment-item-content">
+                                <p>Great question! I've found that using system prompts with clear role definitions helps a lot. Also, always include examples in your prompts for consistency...</p>
+                            </div>
+                            <footer class="comment-item-footer">
+                                <span class="comment-score">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path fill="currentColor" d="M7 14l5-5 5 5z"/>
+                                    </svg>
+                                    42
+                                </span>
+                                <a href="/post/456#comment-789" class="comment-context">View Context</a>
+                            </footer>
+                        </article>
+
+                        <article class="comment-item">
+                            <header class="comment-item-header">
+                                <a href="/post/457" class="comment-post-link">
+                                    Re: HackGT team formation thread
+                                </a>
+                                <time datetime="2025-09-29T18:00:00Z">Yesterday</time>
+                            </header>
+                            <div class="comment-item-content">
+                                <p>I'm interested! I have experience with React and Firebase. My GitHub is linked in my profile. Let's connect!</p>
+                            </div>
+                            <footer class="comment-item-footer">
+                                <span class="comment-score">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path fill="currentColor" d="M7 14l5-5 5 5z"/>
+                                    </svg>
+                                    15
+                                </span>
+                                <a href="/post/457#comment-790" class="comment-context">View Context</a>
+                            </footer>
+                        </article>
+                    </div>
+
+                    <button class="load-more-button">Load More Comments</button>
+                </div>
+
+                <!-- Saved Panel -->
+                <div role="tabpanel" id="saved-panel" aria-labelledby="saved-tab" class="tab-panel" hidden>
+                    <div class="saved-message">
+                        <svg width="48" height="48" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill="currentColor" d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+                        </svg>
+                        <p>Your saved posts are private</p>
+                    </div>
+                </div>
+
+                <!-- About Panel -->
+                <div role="tabpanel" id="about-panel" aria-labelledby="about-tab" class="tab-panel" hidden>
+                    <div class="about-content">
+                        <section class="about-section">
+                            <h2>Education</h2>
+                            <div class="about-item">
+                                <h3>Georgia Institute of Technology</h3>
+                                <p>B.S. Computer Science - Expected 2025</p>
+                                <p>Concentration: Intelligence & Machine Learning</p>
+                                <p>GPA: 3.8/4.0</p>
+                            </div>
+                        </section>
+
+                        <section class="about-section">
+                            <h2>Experience</h2>
+                            <div class="about-item">
+                                <h3>AI Research Assistant</h3>
+                                <p>GT Machine Learning Lab • Jan 2024 - Present</p>
+                                <p>Working on neural architecture search and automated machine learning systems.</p>
+                            </div>
+                            <div class="about-item">
+                                <h3>Software Engineering Intern</h3>
+                                <p>Microsoft • Summer 2024</p>
+                                <p>Developed AI-powered code completion features for VS Code.</p>
+                            </div>
+                        </section>
+
+                        <section class="about-section">
+                            <h2>Skills</h2>
+                            <div class="skills-list">
+                                <span class="skill-tag">Python</span>
+                                <span class="skill-tag">JavaScript</span>
+                                <span class="skill-tag">Machine Learning</span>
+                                <span class="skill-tag">PyTorch</span>
+                                <span class="skill-tag">React</span>
+                                <span class="skill-tag">Vibe-Coding</span>
+                                <span class="skill-tag">Claude API</span>
+                                <span class="skill-tag">Git</span>
+                            </div>
+                        </section>
+
+                        <section class="about-section">
+                            <h2>Projects</h2>
+                            <div class="about-item">
+                                <h3>AI Study Buddy</h3>
+                                <p>An AI-powered study assistant that generates personalized quizzes and explanations based on course materials.</p>
+                                <a href="https://github.com/johndoe/ai-study-buddy">View on GitHub</a>
+                            </div>
+                        </section>
+
+                        <section class="about-section">
+                            <h2>Communities</h2>
+                            <div class="communities-grid">
+                                <a href="/c/ai-coding" class="community-badge">
+                                    <span class="community-icon">AI</span>
+                                    <span>AI & Vibe-Coding</span>
+                                </a>
+                                <a href="/c/cs7641" class="community-badge">
+                                    <span class="community-icon">ML</span>
+                                    <span>CS 7641</span>
+                                </a>
+                                <a href="/c/hackgt" class="community-badge">
+                                    <span class="community-icon">HG</span>
+                                    <span>HackGT</span>
+                                </a>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Awards Panel -->
+                <div role="tabpanel" id="awards-panel" aria-labelledby="awards-tab" class="tab-panel" hidden>
+                    <div class="awards-grid">
+                        <div class="award-item">
+                            <div class="award-icon gold">🏆</div>
+                            <div class="award-info">
+                                <div class="award-name">Top Contributor</div>
+                                <div class="award-count">×3</div>
+                            </div>
+                        </div>
+                        <div class="award-item">
+                            <div class="award-icon silver">🥈</div>
+                            <div class="award-info">
+                                <div class="award-name">Helpful</div>
+                                <div class="award-count">×15</div>
+                            </div>
+                        </div>
+                        <div class="award-item">
+                            <div class="award-icon bronze">🥉</div>
+                            <div class="award-info">
+                                <div class="award-name">Insightful</div>
+                                <div class="award-count">×28</div>
+                            </div>
+                        </div>
+                        <div class="award-item">
+                            <div class="award-icon special">💡</div>
+                            <div class="award-info">
+                                <div class="award-name">Innovation Award</div>
+                                <div class="award-count">×1</div>
+                            </div>
+                        </div>
+                        <div class="award-item">
+                            <div class="award-icon special">🎓</div>
+                            <div class="award-info">
+                                <div class="award-name">GT Verified</div>
+                                <div class="award-count">×1</div>
+                            </div>
+                        </div>
+                        <div class="award-item">
+                            <div class="award-icon common">⭐</div>
+                            <div class="award-info">
+                                <div class="award-name">Quality Post</div>
+                                <div class="award-count">×45</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="award-stats">
+                        <h3>Award Statistics</h3>
+                        <div class="stat-row">
+                            <span>Total Awards Received:</span>
+                            <strong>93</strong>
+                        </div>
+                        <div class="stat-row">
+                            <span>Awards Given:</span>
+                            <strong>156</strong>
+                        </div>
+                        <div class="stat-row">
+                            <span>Karma from Awards:</span>
+                            <strong>2,340</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Sidebar -->
+        <aside class="profile-sidebar" aria-label="Profile information">
+            <!-- Trophy Case -->
+            <section class="sidebar-card">
+                <header class="sidebar-card-header">
+                    <h2>Trophy Case</h2>
+                </header>
+                <div class="sidebar-card-body">
+                    <div class="trophy-list">
+                        <div class="trophy-item">
+                            <span class="trophy-icon">🏆</span>
+                            <div>
+                                <div class="trophy-name">Three-Year Club</div>
+                                <div class="trophy-date">September 2024</div>
+                            </div>
+                        </div>
+                        <div class="trophy-item">
+                            <span class="trophy-icon">✅</span>
+                            <div>
+                                <div class="trophy-name">Verified Email</div>
+                                <div class="trophy-date">September 2021</div>
+                            </div>
+                        </div>
+                        <div class="trophy-item">
+                            <span class="trophy-icon">🎓</span>
+                            <div>
+                                <div class="trophy-name">GT Student</div>
+                                <div class="trophy-date">Verified</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Moderated Communities -->
+            <section class="sidebar-card">
+                <header class="sidebar-card-header">
+                    <h2>Moderator of</h2>
+                </header>
+                <div class="sidebar-card-body">
+                    <ul class="mod-list">
+                        <li>
+                            <a href="/c/vibe-coding-beginners">c/vibe-coding-beginners</a>
+                            <span class="member-count">456 members</span>
+                        </li>
+                        <li>
+                            <a href="/c/gt-ml-study">c/gt-ml-study</a>
+                            <span class="member-count">234 members</span>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Recent Activity -->
+            <section class="sidebar-card">
+                <header class="sidebar-card-header">
+                    <h2>Recent Activity</h2>
+                </header>
+                <div class="sidebar-card-body">
+                    <div class="activity-summary">
+                        <div class="activity-item">
+                            <span class="activity-label">Posts this week:</span>
+                            <span class="activity-value">3</span>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-label">Comments this week:</span>
+                            <span class="activity-value">27</span>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-label">Most active in:</span>
+                            <a href="/c/ai-coding" class="activity-value">c/ai-coding</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </aside>
+    </main>
+
+    <!-- Scripts -->
+    <script src="/js/profile.js" defer></script>
+</body>
+</html>

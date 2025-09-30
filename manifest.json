@@ -1,0 +1,250 @@
+{
+  "name": "GA Tech AI & Vibe-Coding Community",
+  "short_name": "GT AI Hub",
+  "description": "Georgia Tech's premier community platform for AI research, programming, and collaborative innovation",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#003057",
+  "background_color": "#B3A369",
+  "dir": "ltr",
+  "lang": "en-US",
+  "id": "gatech-ai-vibe-community",
+  "categories": ["education", "social", "productivity"],
+  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
+
+  "icons": [
+    {
+      "src": "/images/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icons/icon-192x192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/images/icons/icon-512x512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/images/icons/icon-1024x1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+
+  "screenshots": [
+    {
+      "src": "/images/screenshots/mobile-home.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Home Feed - Mobile View"
+    },
+    {
+      "src": "/images/screenshots/mobile-post.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Discussion Thread - Mobile View"
+    },
+    {
+      "src": "/images/screenshots/mobile-create.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Create Post - Mobile View"
+    },
+    {
+      "src": "/images/screenshots/desktop-home.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Home Feed - Desktop View"
+    },
+    {
+      "src": "/images/screenshots/desktop-community.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Community Hub - Desktop View"
+    }
+  ],
+
+  "shortcuts": [
+    {
+      "name": "Create Post",
+      "short_name": "New Post",
+      "description": "Share your thoughts with the community",
+      "url": "/create?source=shortcut",
+      "icons": [
+        {
+          "src": "/images/icons/shortcut-create.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Hot Posts",
+      "short_name": "Hot",
+      "description": "View trending discussions",
+      "url": "/hot?source=shortcut",
+      "icons": [
+        {
+          "src": "/images/icons/shortcut-hot.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "AI Research",
+      "short_name": "AI Hub",
+      "description": "Latest AI research and discussions",
+      "url": "/community/ai-research?source=shortcut",
+      "icons": [
+        {
+          "src": "/images/icons/shortcut-ai.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Messages",
+      "short_name": "Inbox",
+      "description": "Check your messages",
+      "url": "/messages?source=shortcut",
+      "icons": [
+        {
+          "src": "/images/icons/shortcut-messages.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [
+        {
+          "name": "media",
+          "accept": ["image/*", "video/*", "audio/*", ".pdf", ".doc", ".docx", ".txt", ".md"]
+        }
+      ]
+    }
+  },
+
+  "protocol_handlers": [
+    {
+      "protocol": "web+gatech",
+      "url": "/protocol?url=%s"
+    }
+  ],
+
+  "related_applications": [],
+  "prefer_related_applications": false,
+
+  "features": {
+    "file_handlers": [
+      {
+        "action": "/open",
+        "accept": {
+          "text/markdown": [".md"],
+          "text/plain": [".txt"],
+          "application/pdf": [".pdf"]
+        }
+      }
+    ],
+    "window_controls_overlay": {
+      "theme_color": "#003057",
+      "background_color": "#B3A369"
+    },
+    "handle_links": "preferred",
+    "launch_handler": {
+      "client_mode": ["focus-existing", "auto"]
+    },
+    "display_override": [
+      "window-controls-overlay",
+      "standalone",
+      "minimal-ui"
+    ],
+    "edge_side_panel": {
+      "preferred_width": 400
+    }
+  },
+
+  "permissions": [
+    "notifications",
+    "storage",
+    "background-sync",
+    "periodic-background-sync",
+    "idle-detection"
+  ],
+
+  "experimental_features": {
+    "scope_extensions": [
+      {
+        "origin": "https://*.gatech.edu"
+      }
+    ]
+  }
+}

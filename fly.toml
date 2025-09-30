@@ -1,0 +1,187 @@
+# Fly.io Application Configuration for GA Tech Reddit System
+# Budget-optimized for $5/month plan
+# Documentation: https://fly.io/docs/reference/configuration/
+
+# Application name - must be globally unique on Fly.io
+app = "gatech-reddit"
+
+# Primary deployment region (Atlanta for Georgia Tech)
+primary_region = "atl"
+
+# Kill signal and timeout for graceful shutdown
+kill_signal = "SIGINT"
+kill_timeout = 5
+
+# Build configuration - using Dockerfile
+[build]
+  # Dockerfile is in the root directory
+  dockerfile = "Dockerfile"
+  # Build arguments can be passed here if needed
+  # [build.args]
+  #   NODE_ENV = "production"
+
+# Environment variables - non-sensitive configuration
+[env]
+  # Port for internal health checks
+  PORT = "8080"
+
+  # Application environment
+  NODE_ENV = "production"
+
+  # Enable gzip compression
+  NGINX_GZIP = "on"
+
+  # Cache control settings (in seconds)
+  CACHE_STATIC_ASSETS = "31536000"  # 1 year for versioned assets
+  CACHE_HTML = "300"                 # 5 minutes for HTML
+
+  # Security headers
+  X_FRAME_OPTIONS = "DENY"
+  X_CONTENT_TYPE_OPTIONS = "nosniff"
+  X_XSS_PROTECTION = "1; mode=block"
+
+  # Application settings
+  APP_NAME = "GA Tech Reddit"
+  APP_URL = "https://gatech-reddit.fly.dev"
+
+# Experimental features
+[experimental]
+  # Enable auto-rollback on failed deployments
+  auto_rollback = true
+
+  # Enable faster boot times
+  cmd = []
+  entrypoint = []
+
+# HTTP service configuration
+[[services]]
+  # HTTP/HTTPS service
+  internal_port = 8080
+  protocol = "tcp"
+
+  # Auto start/stop to save resources when idle
+  auto_stop_machines = true
+  auto_start_machines = true
+
+  # Minimum machines to keep running (0 saves money when idle)
+  min_machines_running = 0
+
+  # Process configuration
+  [services.concurrency]
+    # Connection handling settings optimized for static site
+    type = "connections"
+    hard_limit = 25    # Maximum connections per instance
+    soft_limit = 20    # Start scaling at this point
+
+  # HTTP port configuration
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+
+    # Force HTTPS redirect
+    force_https = true
+
+  # HTTPS port configuration
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  # TCP health checks - critical for reliability
+  [[services.tcp_checks]]
+    # How often to check health
+    interval = "15s"
+
+    # Timeout for health check
+    timeout = "2s"
+
+    # Grace period on startup
+    grace_period = "5s"
+
+    # Number of consecutive failures before marking unhealthy
+    restart_limit = 0
+
+  # HTTP health checks - ensures app is responding
+  [[services.http_checks]]
+    # Health check endpoint (configured in nginx)
+    path = "/health"
+
+    # Check interval
+    interval = "30s"
+
+    # Timeout for check
+    timeout = "3s"
+
+    # Expected response codes
+    method = "GET"
+
+    # Grace period for app startup
+    grace_period = "10s"
+
+    # TLS verification
+    protocol = "http"
+
+    # Skip TLS certificate verification for internal checks
+    tls_skip_verify = false
+
+# Machine configuration - optimized for $5/month budget
+[[vm]]
+  # Smallest instance for cost optimization
+  size = "shared-cpu-1x"
+
+  # Memory allocation (256MB is minimum)
+  memory = "256mb"
+
+  # CPU configuration
+  cpu_kind = "shared"
+  cpus = 1
+
+# Metrics configuration for monitoring
+[metrics]
+  # Expose metrics on port 9091 for Prometheus
+  port = 9091
+  path = "/metrics"
+
+# Deploy configuration
+[deploy]
+  # Deployment strategy - rolling for zero downtime
+  strategy = "rolling"
+
+  # Maximum unavailable during deployment
+  max_unavailable = 0
+
+  # Wait for health checks before continuing
+  wait_timeout = "5m"
+
+# Restart policy
+[[restart]]
+  # Maximum restart attempts
+  attempts = 3
+
+  # Restart window
+  window = "5m"
+
+  # Restart policy
+  policy = "on-failure"
+
+# Statics configuration (optional - for CDN-like behavior)
+[[statics]]
+  # Serve static files from /static URL path
+  guest_path = "/static"
+  url_prefix = "/static"
+
+# Mounts for persistent storage (if needed in future)
+# Commented out to save costs - uncomment if persistence needed
+# [[mounts]]
+#   source = "gatech_data"
+#   destination = "/data"
+#   initial_size = "1gb"
+
+# Secrets configuration (set via fly secrets set)
+# These are injected as environment variables at runtime
+# Use these for sensitive data like API keys
+#
+# Required secrets to set:
+# fly secrets set SUPABASE_URL=your-supabase-url
+# fly secrets set SUPABASE_ANON_KEY=your-supabase-anon-key
+# fly secrets set GITHUB_CLIENT_ID=your-github-client-id
+# fly secrets set GITHUB_CLIENT_SECRET=your-github-client-secret

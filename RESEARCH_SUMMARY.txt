@@ -1,0 +1,551 @@
+================================================================================
+GEORGIA TECH AI & VIBE-CODING COMMUNITY PLATFORM
+Research Summary & Requirements Documentation
+================================================================================
+
+EXECUTIVE SUMMARY
+--------------------------------------------------------------------------------
+This document outlines requirements for building a Reddit-style community system
+specifically designed for Georgia Tech students and alumni focused on AI and
+Vibe-Coding. The platform will serve as a centralized hub for collaboration,
+knowledge sharing, project showcasing, and career networking within the GA Tech
+CS/AI ecosystem.
+
+Key differentiators from existing platforms:
+- Focus on Vibe-Coding methodology and AI-assisted development
+- GA Tech-specific features (course discussions, research collaboration)
+- Project showcase with live demos and code sharing
+- Alumni mentorship and networking integration
+- Study group coordination with scheduling tools
+- Career resources tailored to AI/ML roles
+
+
+================================================================================
+SECTION 1: REDDIT CORE FEATURES ANALYSIS
+================================================================================
+
+1.1 ESSENTIAL REDDIT MECHANICS
+--------------------------------
+VOTING SYSTEM:
+- Upvote/downvote mechanism for posts and comments
+- Algorithm favors newer posts (early votes more impactful)
+- Vote counts hidden for first few hours to prevent bias
+- Score calculation: log10(ups-downs) * time_decay_factor
+
+COMMENT THREADING:
+- Nested reply structure for conversation threads
+- Denormalized tree structure in database
+- Collapsible thread branches
+- Sort options: best, top, new, controversial, Q&A
+
+SUBREDDIT ORGANIZATION:
+- Topic-based communities with unique rules/culture
+- Moderator tools and permissions system
+- Community sidebars with rules and resources
+- Post flairs for categorization
+- User flairs for identity/credentials
+
+USER PROFILES & KARMA:
+- Profile pages showing post/comment history
+- Karma system (post karma + comment karma)
+- Trophy/achievement system
+- Saved posts and comments
+- Following other users functionality
+
+SORTING ALGORITHMS:
+- Hot: (log10(score) * sign) + (seconds/45000)
+- Top: Pure score-based within timeframe
+- New: Chronological ordering
+- Rising: Velocity-based early detection
+- Controversial: High activity with balanced votes
+- Best: Machine learning-based personalization
+
+
+================================================================================
+SECTION 2: GA TECH COMMUNITY NEEDS ANALYSIS
+================================================================================
+
+2.1 CURRENT GA TECH DIGITAL ECOSYSTEM
+--------------------------------------
+EXISTING PLATFORMS:
+- Discord server: 15,000+ members (general purpose)
+- Class-specific Discord servers (e.g., GT '25: 2,200+ members)
+- Campus Labs Engage (official events/organizations portal)
+- Department-specific communities (Physics GAP Discord)
+- Reddit r/gatech subreddit (unofficial)
+
+ACTIVE STUDENT ORGANIZATIONS:
+- AI@GT (Artificial Intelligence at Georgia Tech)
+- CS Careers Club
+- M@CC (Minorities at College of Computing)
+- Big O Theory Club
+- The Agency (AI focus)
+- Effective Altruism GT (AI Safety)
+- VGDev (game development)
+
+2.2 IDENTIFIED COMMUNITY NEEDS
+-------------------------------
+ACADEMIC COLLABORATION:
+- Course-specific discussion boards (CS 1331, CS 7641, etc.)
+- Study group formation and scheduling
+- Project team formation for group assignments
+- TA/Professor office hours integration
+- Research lab recruitment and showcases
+- Thesis/dissertation feedback groups
+
+CAREER DEVELOPMENT:
+- Internship/co-op opportunities board
+- Alumni mentorship matching
+- Interview preparation resources
+- Company culture discussions
+- Salary negotiation threads
+- Portfolio/resume reviews
+
+PROJECT SHOWCASING:
+- Live demo hosting capabilities
+- Code repository integration (GitHub)
+- Feedback and collaboration requests
+- Hackathon team formation
+- Open source contribution coordination
+
+2.3 VIBE-CODING SPECIFIC FEATURES
+----------------------------------
+DEFINITION & CONTEXT:
+Vibe-Coding = AI-assisted development where users express intentions in plain
+language and AI generates executable code. Coined by Andrej Karpathy (2025).
+
+PLATFORM INTEGRATION:
+- AI code generation showcases
+- Vibe-code review and improvement threads
+- Security vulnerability discussions
+- Best practices for AI-assisted development
+- Tool comparisons (Cursor, Replit Agent, Claude, etc.)
+- "Vibe-to-Production" success stories
+- Debugging AI-generated code discussions
+
+EDUCATIONAL COMPONENTS:
+- Vibe-coding tutorials and workshops
+- Prompt engineering techniques
+- AI model comparison threads
+- Code quality assessment tools
+- Security audit requirements
+- Maintainability guidelines
+
+
+================================================================================
+SECTION 3: TECHNICAL REQUIREMENTS & ARCHITECTURE
+================================================================================
+
+3.1 CLIENT-SIDE CAPABILITIES
+-----------------------------
+PURE FRONTEND FEATURES:
+- Post/comment display and navigation
+- Client-side sorting and filtering
+- LocalStorage for user preferences
+- Temporary session management
+- Markdown rendering
+- Code syntax highlighting
+- Dark/light theme switching
+- Responsive mobile design
+
+LIMITATIONS WITHOUT BACKEND:
+- No real-time updates
+- No persistent user accounts
+- Limited to ~5MB localStorage per origin
+- No server-side validation
+- No email notifications
+- No file uploads (images/videos)
+- No advanced search capabilities
+- Security vulnerabilities
+
+3.2 STORAGE SOLUTIONS COMPARISON
+---------------------------------
+LOCALSTORAGE:
+Pros: Simple, no setup, synchronous API, 5MB limit
+Cons: No real-time sync, single device, no queries
+Use for: User preferences, draft posts, temporary data
+
+FIREBASE (RECOMMENDED FOR MVP):
+Pros: Real-time sync, authentication, 10GB free tier
+Cons: Vendor lock-in, learning curve, Google dependency
+Features: Firestore DB, Auth, Storage, Hosting, Functions
+
+ALTERNATIVES EVALUATED:
+- Appwrite: Open-source, self-hosted option
+- Back4App: Parse-based, good community support
+- PouchDB: Offline-first, CouchDB sync
+- RxDB: Real-time, works with multiple backends
+- Supabase: PostgreSQL-based, good for SQL users
+
+3.3 AUTHENTICATION OPTIONS
+--------------------------
+GITHUB OAUTH (PRIMARY):
+- Natural fit for CS students
+- Shows coding activity
+- No additional accounts needed
+- Firebase GitHub Auth SDK available
+
+GOOGLE OAUTH (SECONDARY):
+- GA Tech Google Workspace integration
+- @gatech.edu email verification
+- Calendar integration potential
+- Google Identity Services SDK
+
+GA TECH SSO (FUTURE):
+- CAS/SAML integration
+- Automatic student/alumni verification
+- Course enrollment data access
+- Requires institutional approval
+
+3.4 RECOMMENDED TECH STACK
+---------------------------
+FRONTEND:
+- HTML5 + CSS3 (Tailwind/Bootstrap)
+- Vanilla JS or lightweight framework (Alpine.js)
+- Markdown-it for rendering
+- Prism.js for syntax highlighting
+- Day.js for time handling
+
+BACKEND SERVICES:
+- Firebase Firestore (database)
+- Firebase Auth (authentication)
+- Firebase Storage (media files)
+- Firebase Hosting (static hosting)
+- Cloudflare (CDN/DDoS protection)
+
+DEVELOPMENT TOOLS:
+- Vite (build tool)
+- ESLint (code quality)
+- Prettier (formatting)
+- Cypress (E2E testing)
+- GitHub Actions (CI/CD)
+
+
+================================================================================
+SECTION 4: FEATURE PRIORITIZATION
+================================================================================
+
+4.1 MVP FEATURES (PHASE 1 - WEEKS 1-4)
+---------------------------------------
+CORE FUNCTIONALITY:
+1. User registration/login (GitHub OAuth)
+2. Create and view posts (text only)
+3. Basic commenting system (flat structure)
+4. Upvote/downvote posts
+5. User profiles (basic info)
+6. Single community/board (general AI discussion)
+7. Sort by new/top
+8. Basic search (title/content)
+9. Mobile-responsive design
+
+DATA MODEL:
+- Users (id, username, email, joined_date, karma)
+- Posts (id, author_id, title, content, score, created_at)
+- Comments (id, post_id, author_id, content, score, created_at)
+- Votes (user_id, target_id, type, value)
+
+4.2 ENHANCED FEATURES (PHASE 2 - WEEKS 5-8)
+--------------------------------------------
+COMMUNITY FEATURES:
+1. Multiple communities/subreddits creation
+2. Threaded comments with nesting
+3. User karma calculation
+4. Post flairs and categorization
+5. Save/bookmark posts
+6. User following system
+7. Hot sorting algorithm
+8. Markdown support in posts/comments
+9. Code syntax highlighting
+10. Google OAuth addition
+
+MODERATION TOOLS:
+- Community moderators assignment
+- Post/comment removal
+- User ban/timeout system
+- Community rules display
+- Report functionality
+
+4.3 ADVANCED FEATURES (PHASE 3 - WEEKS 9-12)
+---------------------------------------------
+AI & VIBE-CODING:
+1. Vibe-code playground integration
+2. AI prompt sharing templates
+3. Code review request system
+4. Live code collaboration
+5. GitHub repo integration
+6. Project showcase galleries
+
+GA TECH SPECIFIC:
+1. Course-specific communities (auto-created)
+2. Verified student/alumni badges
+3. Study group scheduler
+4. Office hours calendar
+5. Research lab directories
+6. Career fair integration
+
+ENGAGEMENT FEATURES:
+1. Private messaging system
+2. Push notifications (web)
+3. Email digest options
+4. Awards/trophy system
+5. Reputation badges
+6. Trending topics sidebar
+
+4.4 FUTURE ENHANCEMENTS (POST-LAUNCH)
+--------------------------------------
+ADVANCED CAPABILITIES:
+- Machine learning-based feed personalization
+- Real-time collaborative coding
+- Video streaming for demos
+- AI-powered content moderation
+- Resume/portfolio hosting
+- Job posting board with company verification
+- Alumni mentorship matching algorithm
+- Research paper discussion threads
+- Grant/funding opportunity alerts
+- Hackathon organization tools
+
+
+================================================================================
+SECTION 5: COMPETITIVE ANALYSIS
+================================================================================
+
+5.1 EXISTING PLATFORMS COMPARISON
+----------------------------------
+REDDIT R/GATECH:
+Strengths: Established community, diverse topics
+Weaknesses: Not GT-exclusive, generic features
+Gap: No GT-specific integrations
+
+DISCORD SERVERS:
+Strengths: Real-time chat, voice channels, free
+Weaknesses: Poor for long-form content, no threading
+Gap: Not optimized for knowledge preservation
+
+SLACK WORKSPACES:
+Strengths: Professional feel, integrations
+Weaknesses: Message limits, expensive, chat-focused
+Gap: Not designed for public discussions
+
+PIAZZA:
+Strengths: Academic focus, instructor endorsed
+Weaknesses: Course-limited, no social features
+Gap: Ends after semester
+
+CAMPUS LABS ENGAGE:
+Strengths: Official platform, event management
+Weaknesses: Clunky UI, limited discussion features
+Gap: No technical/coding focus
+
+5.2 UNIQUE VALUE PROPOSITIONS
+------------------------------
+PRIMARY DIFFERENTIATORS:
+1. Vibe-Coding focus - First platform dedicated to AI-assisted development
+2. GT authentication - Verified community of peers and alumni
+3. Project showcases - Live demos with code sharing
+4. Career pipeline - Direct alumni mentorship connections
+5. Academic integration - Course discussions persist beyond semester
+
+COMPETITIVE ADVANTAGES:
+- Persistent knowledge base (vs Discord/Slack)
+- Technical focus (vs generic platforms)
+- Community-driven (vs top-down Piazza)
+- Free and open (vs paid alternatives)
+- Modern UI/UX (vs dated academic tools)
+
+5.3 MARKET POSITIONING
+----------------------
+TARGET USERS:
+Primary: GA Tech CS/AI undergrads (3,000+ students)
+Secondary: Graduate students (1,500+ in computing)
+Tertiary: Alumni in tech industry (10,000+)
+
+VALUE METRICS:
+- User engagement: 3+ visits per week
+- Content creation: 1+ post/comment per week
+- Knowledge retention: Searchable archive
+- Career outcomes: Job/internship connections
+- Academic support: Study group formation
+
+
+================================================================================
+SECTION 6: IMPLEMENTATION ROADMAP
+================================================================================
+
+6.1 DEVELOPMENT PHASES
+----------------------
+PHASE 0: SETUP (WEEK 0)
+- Development environment setup
+- Firebase project creation
+- GitHub repository initialization
+- Basic HTML/CSS scaffold
+- Authentication configuration
+
+PHASE 1: MVP (WEEKS 1-4)
+Week 1: Authentication and user system
+Week 2: Post creation and display
+Week 3: Comments and voting
+Week 4: User profiles and search
+
+PHASE 2: COMMUNITY (WEEKS 5-8)
+Week 5: Multiple communities
+Week 6: Threaded comments
+Week 7: Moderation tools
+Week 8: Enhanced UI/UX
+
+PHASE 3: SPECIALIZATION (WEEKS 9-12)
+Week 9: Vibe-coding features
+Week 10: GA Tech integrations
+Week 11: Project showcases
+Week 12: Performance optimization
+
+6.2 TESTING STRATEGY
+--------------------
+TESTING PHASES:
+1. Alpha: Developer testing only
+2. Beta: 10-20 CS students
+3. Limited release: 100 students (one class)
+4. Soft launch: All CS students
+5. Full launch: All GT community
+
+KEY METRICS:
+- Page load time < 2 seconds
+- 99.9% uptime target
+- Mobile responsiveness
+- Cross-browser compatibility
+- Accessibility (WCAG 2.1 AA)
+
+6.3 LAUNCH STRATEGY
+-------------------
+MARKETING APPROACH:
+1. Partner with AI@GT organization
+2. Demo at CS club meetings
+3. Professor endorsements
+4. Integrate with course syllabi
+5. Alumni newsletter feature
+
+GROWTH TARGETS:
+Month 1: 100 active users
+Month 3: 500 active users
+Month 6: 1,500 active users
+Year 1: 3,000+ active users
+
+
+================================================================================
+SECTION 7: RISK ASSESSMENT & MITIGATION
+================================================================================
+
+7.1 TECHNICAL RISKS
+-------------------
+RISK: Firebase vendor lock-in
+MITIGATION: Abstract data layer, maintain export scripts
+
+RISK: Scaling beyond free tier
+MITIGATION: Implement caching, optimize queries, seek GT funding
+
+RISK: Security vulnerabilities
+MITIGATION: Regular audits, input sanitization, rate limiting
+
+RISK: AI-generated code issues
+MITIGATION: Clear disclaimers, community review process
+
+7.2 ADOPTION RISKS
+------------------
+RISK: Competition with Discord
+MITIGATION: Different use case focus (persistent vs real-time)
+
+RISK: Low initial engagement
+MITIGATION: Seed content, incentive program, class integration
+
+RISK: Moderation challenges
+MITIGATION: Community guidelines, automated filters, volunteer mods
+
+7.3 INSTITUTIONAL RISKS
+-----------------------
+RISK: GT administration concerns
+MITIGATION: Clear terms of service, academic focus, faculty advisor
+
+RISK: FERPA compliance
+MITIGATION: No grade data, optional real names, privacy controls
+
+RISK: Liability for user content
+MITIGATION: DMCA compliance, clear ToS, moderation system
+
+
+================================================================================
+SECTION 8: SUCCESS METRICS & KPIs
+================================================================================
+
+8.1 USER ENGAGEMENT
+-------------------
+Daily Active Users (DAU): Target 20% of user base
+Weekly Active Users (WAU): Target 60% of user base
+Monthly Active Users (MAU): Target 85% of user base
+Average Session Duration: >5 minutes
+Posts per Day: 50+ after 6 months
+Comments per Post: Average 5+
+
+8.2 CONTENT QUALITY
+-------------------
+Upvote Ratio: >70% positive
+Answered Questions: >80% within 24 hours
+Code Snippet Shares: 20+ per week
+Project Showcases: 5+ per month
+Vibe-Coding Examples: 10+ per week
+
+8.3 COMMUNITY HEALTH
+--------------------
+User Retention (Month 1): >40%
+User Retention (Month 3): >25%
+Repeat Contributors: >30% post multiple times
+Cross-Community Participation: >50% join 2+ communities
+Alumni Participation: 10% of active users
+
+
+================================================================================
+CONCLUSION & RECOMMENDATIONS
+================================================================================
+
+SUMMARY:
+The Georgia Tech AI & Vibe-Coding Community Platform represents a significant
+opportunity to create a specialized hub for technical collaboration and career
+development within the GT ecosystem. By focusing on the unique needs of CS/AI
+students and incorporating cutting-edge concepts like Vibe-Coding, this platform
+can differentiate itself from generic alternatives.
+
+KEY RECOMMENDATIONS:
+
+1. START SIMPLE: Launch with core Reddit-like features before adding complexity
+2. FOCUS ON VIBE-CODING: This unique angle sets the platform apart
+3. USE FIREBASE: Fastest path to MVP with real-time capabilities
+4. PRIORITIZE MOBILE: Students primarily use phones for social platforms
+5. ENGAGE STUDENT ORGS: Partner with AI@GT for initial adoption
+6. BUILD IN PUBLIC: Open-source approach encourages contribution
+7. MEASURE EVERYTHING: Data-driven iteration based on user behavior
+
+CRITICAL SUCCESS FACTORS:
+- Strong initial content seeding
+- Active community moderation
+- Regular feature updates based on feedback
+- Integration with academic calendar/courses
+- Alumni mentor recruitment
+- Sustainable funding model (grants, sponsorship)
+
+NEXT STEPS:
+1. Validate concept with target user interviews (10-15 students)
+2. Create design mockups for core screens
+3. Set up Firebase project and authentication
+4. Build MVP focusing on essential features
+5. Recruit beta testers from AI@GT organization
+6. Launch soft beta with single CS course
+7. Iterate based on feedback
+8. Plan full launch for start of semester
+
+This platform has the potential to become the central hub for technical
+collaboration and career development for Georgia Tech's computer science
+community, bridging the gap between academic learning and industry practice
+through the lens of modern AI-assisted development methodologies.
+
+================================================================================
+END OF RESEARCH SUMMARY
+================================================================================

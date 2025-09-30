@@ -1,0 +1,213 @@
+# Docker Build Ignore File
+# Excludes unnecessary files from Docker build context
+# This reduces build time and image size
+
+# Version Control
+.git/
+.gitignore
+.gitattributes
+
+# Development Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# IDE and Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Documentation and Project Files
+*.md
+README*
+LICENSE*
+CHANGELOG*
+CONTRIBUTING*
+CODE_OF_CONDUCT*
+*.txt
+docs/
+documentation/
+
+# Firebase Files (not needed for Supabase deployment)
+firebase.json
+.firebaserc
+firestore.rules
+firestore.indexes.json
+storage.rules
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+firebase-export-*/
+
+# Environment and Configuration Files
+.env
+.env.*
+!.env.example
+*.env
+config.local.js
+secrets.json
+*.pem
+*.key
+*.cert
+*.crt
+
+# Testing Files
+test/
+tests/
+spec/
+__tests__/
+*.test.js
+*.spec.js
+coverage/
+.nyc_output/
+jest.config.*
+cypress/
+cypress.json
+
+# Build Artifacts
+dist/
+build/
+out/
+tmp/
+temp/
+*.log
+logs/
+
+# Fly.io Specific
+fly.toml
+.fly/
+fly-*.toml
+
+# Docker Files (prevents recursive inclusion)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Deployment Scripts
+deploy.sh
+deploy.ps1
+*.sh
+!docker-entrypoint.sh
+
+# Backup Files
+*.bak
+*.backup
+*.old
+*.orig
+
+# Archive Files
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+# OS Generated Files
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Icon?
+.AppleDouble
+.LSOverride
+
+# Python Files (if any)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Temporary Files
+*.tmp
+*.temp
+.cache/
+.sass-cache/
+
+# Database Files
+*.sqlite
+*.sqlite3
+*.db
+*.sql
+
+# Large Media Files (optimize separately)
+*.mp4
+*.avi
+*.mov
+*.wmv
+*.flv
+*.mkv
+*.webm
+
+# Sensitive Data
+credentials/
+private/
+confidential/
+
+# Monitoring and Logging
+*.log.*
+access.log
+error.log
+logs/
+
+# Package Manager Files
+bower_components/
+jspm_packages/
+
+# TypeScript Files (if not using TypeScript)
+*.ts
+!*.d.ts
+tsconfig.json
+tslint.json
+
+# Source Maps (rebuild in production)
+*.map
+
+# Development Server Files
+webpack.config.js
+rollup.config.js
+gulpfile.js
+Gruntfile.js
+
+# CI/CD Files
+.github/
+.gitlab/
+.circleci/
+.travis.yml
+appveyor.yml
+jenkins/
+
+# Terraform Files (if any)
+*.tf
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Kubernetes Files (if any)
+*.yaml
+*.yml
+!docker-compose.yml
+k8s/
+kubernetes/
+
+# Helm Charts (if any)
+charts/
+*.tgz
+
+# Miscellaneous
+TODO
+NOTES
+scratch/
+drafts/

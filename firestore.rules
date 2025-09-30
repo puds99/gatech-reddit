@@ -1,0 +1,371 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================================
+    // HELPER FUNCTIONS
+    // ============================================
+
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if user owns the resource
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Check if user is the author
+    function isAuthor() {
+      return isAuthenticated() &&
+        request.auth.uid == resource.data.author_id;
+    }
+
+    // Check if user is creating their own content
+    function isCreatingOwnContent() {
+      return isAuthenticated() &&
+        request.auth.uid == request.resource.data.author_id;
+    }
+
+    // Check if user has verified GA Tech email
+    function isGaTechVerified() {
+      return isAuthenticated() &&
+        request.auth.token.email != null &&
+        request.auth.token.email.matches('.*@(gatech|cc\\.gatech)\\.edu$') &&
+        request.auth.token.email_verified == true;
+    }
+
+    // Check if user is a moderator of a community
+    function isModerator(communityId) {
+      return isAuthenticated() &&
+        request.auth.uid in get(/databases/$(database)/documents/communities/$(communityId)).data.moderators;
+    }
+
+    // Check if user is a global admin
+    function isAdmin() {
+      return isAuthenticated() &&
+        request.auth.token.admin == true;
+    }
+
+    // Validate string length
+    function isValidLength(text, maxLength) {
+      return text is string && text.size() <= maxLength;
+    }
+
+    // Validate required fields are present
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    // Check rate limiting (basic implementation)
+    function withinRateLimit() {
+      // In production, implement proper rate limiting
+      return true;
+    }
+
+    // Check if content is appropriate (basic implementation)
+    function isAppropriateContent() {
+      // In production, implement content moderation
+      return !request.resource.data.get('content', '').matches('.*<script.*') &&
+             !request.resource.data.get('title', '').matches('.*<script.*');
+    }
+
+    // Validate timestamp is server timestamp
+    function isServerTimestamp(field) {
+      return request.resource.data[field] == request.time;
+    }
+
+    // Check comment nesting depth
+    function isValidCommentDepth() {
+      return request.resource.data.depth <= 5;
+    }
+
+    // ============================================
+    // USERS COLLECTION
+    // ============================================
+
+    match /users/{userId} {
+      // Anyone can read basic user profiles
+      allow read: if true;
+
+      // Users can create their own profile
+      allow create: if isOwner(userId) &&
+        hasRequiredFields(['username', 'email', 'created_at']) &&
+        isValidLength(request.resource.data.username, 30) &&
+        isValidLength(request.resource.data.bio, 500) &&
+        isServerTimestamp('created_at');
+
+      // Users can update their own profile
+      allow update: if isOwner(userId) &&
+        isValidLength(request.resource.data.get('username', ''), 30) &&
+        isValidLength(request.resource.data.get('bio', ''), 500) &&
+        // Prevent users from modifying certain fields
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'uid', 'email', 'created_at', 'karma', 'gatech_verified'
+        ]);
+
+      // Only admins can delete users
+      allow delete: if isAdmin();
+    }
+
+    // ============================================
+    // COMMUNITIES COLLECTION
+    // ============================================
+
+    match /communities/{communityId} {
+      // Anyone can read communities
+      allow read: if true;
+
+      // Authenticated users can create communities
+      allow create: if isAuthenticated() &&
+        hasRequiredFields(['name', 'slug', 'description', 'creator_id', 'created_at']) &&
+        isValidLength(request.resource.data.name, 50) &&
+        isValidLength(request.resource.data.description, 500) &&
+        request.resource.data.creator_id == request.auth.uid &&
+        isServerTimestamp('created_at') &&
+        withinRateLimit();
+
+      // Moderators can update their community
+      allow update: if isModerator(communityId) &&
+        isValidLength(request.resource.data.get('name', ''), 50) &&
+        isValidLength(request.resource.data.get('description', ''), 500) &&
+        // Prevent changing certain fields
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'slug', 'creator_id', 'created_at'
+        ]);
+
+      // Only admins can delete communities
+      allow delete: if isAdmin();
+    }
+
+    // ============================================
+    // POSTS COLLECTION
+    // ============================================
+
+    match /posts/{postId} {
+      // Anyone can read non-deleted posts
+      allow read: if resource == null || resource.data.deleted != true;
+
+      // Authenticated users can create posts
+      allow create: if isCreatingOwnContent() &&
+        hasRequiredFields(['title', 'author_id', 'community_id', 'created_at']) &&
+        isValidLength(request.resource.data.title, 300) &&
+        isValidLength(request.resource.data.get('content', ''), 40000) &&
+        isAppropriateContent() &&
+        isServerTimestamp('created_at') &&
+        request.resource.data.score == 0 &&
+        request.resource.data.comment_count == 0 &&
+        withinRateLimit();
+
+      // Authors can edit their posts, moderators can moderate
+      allow update: if (isAuthor() || isModerator(resource.data.community_id)) &&
+        isValidLength(request.resource.data.get('title', ''), 300) &&
+        isValidLength(request.resource.data.get('content', ''), 40000) &&
+        isAppropriateContent() &&
+        // Prevent manipulation of certain fields
+        (isAuthor() ?
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+            'author_id', 'community_id', 'created_at', 'score', 'comment_count'
+          ]) :
+          true);
+
+      // Authors and moderators can delete (soft delete)
+      allow delete: if isAuthor() ||
+        isModerator(resource.data.community_id) ||
+        isAdmin();
+    }
+
+    // ============================================
+    // COMMENTS COLLECTION
+    // ============================================
+
+    match /comments/{commentId} {
+      // Anyone can read non-deleted comments
+      allow read: if resource == null || resource.data.deleted != true;
+
+      // Authenticated users can create comments
+      allow create: if isCreatingOwnContent() &&
+        hasRequiredFields(['content', 'author_id', 'post_id', 'created_at']) &&
+        isValidLength(request.resource.data.content, 10000) &&
+        isAppropriateContent() &&
+        isValidCommentDepth() &&
+        isServerTimestamp('created_at') &&
+        request.resource.data.score == 0 &&
+        withinRateLimit();
+
+      // Authors can edit their comments within 5 minutes
+      allow update: if isAuthor() &&
+        isValidLength(request.resource.data.get('content', ''), 10000) &&
+        isAppropriateContent() &&
+        // Check if within edit window (5 minutes)
+        (request.time - resource.data.created_at) < duration.value(5, 'm') &&
+        // Prevent manipulation of certain fields
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'author_id', 'post_id', 'parent_id', 'created_at', 'score', 'depth'
+        ]);
+
+      // Authors can delete their comments
+      allow delete: if isAuthor() || isAdmin();
+    }
+
+    // ============================================
+    // VOTES COLLECTION
+    // ============================================
+
+    match /votes/{voteId} {
+      // Users can read their own votes
+      allow read: if isAuthenticated() &&
+        resource.data.user_id == request.auth.uid;
+
+      // Users can create/update their votes
+      allow create, update: if isAuthenticated() &&
+        request.resource.data.user_id == request.auth.uid &&
+        request.resource.data.value in [-1, 1] &&
+        hasRequiredFields(['user_id', 'target_id', 'target_type', 'value']) &&
+        request.resource.data.target_type in ['post', 'comment'] &&
+        withinRateLimit();
+
+      // Users can delete their own votes
+      allow delete: if isAuthenticated() &&
+        resource.data.user_id == request.auth.uid;
+    }
+
+    // ============================================
+    // USER PREFERENCES (SUBCOLLECTION)
+    // ============================================
+
+    match /users/{userId}/preferences/{prefId} {
+      // Users can read their own preferences
+      allow read: if isOwner(userId);
+
+      // Users can write their own preferences
+      allow write: if isOwner(userId);
+    }
+
+    // ============================================
+    // NOTIFICATIONS (SUBCOLLECTION)
+    // ============================================
+
+    match /users/{userId}/notifications/{notificationId} {
+      // Users can read their own notifications
+      allow read: if isOwner(userId);
+
+      // System can create notifications (via Cloud Functions)
+      allow create: if false; // Only Cloud Functions
+
+      // Users can update (mark as read) their notifications
+      allow update: if isOwner(userId) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'read_at']);
+
+      // Users can delete their notifications
+      allow delete: if isOwner(userId);
+    }
+
+    // ============================================
+    // SAVED POSTS (SUBCOLLECTION)
+    // ============================================
+
+    match /users/{userId}/saved/{savedId} {
+      // Users can read their own saved items
+      allow read: if isOwner(userId);
+
+      // Users can save items
+      allow create: if isOwner(userId) &&
+        hasRequiredFields(['post_id', 'saved_at']) &&
+        isServerTimestamp('saved_at');
+
+      // Users cannot update saved items
+      allow update: if false;
+
+      // Users can unsave items
+      allow delete: if isOwner(userId);
+    }
+
+    // ============================================
+    // REPORTS COLLECTION (MODERATION)
+    // ============================================
+
+    match /reports/{reportId} {
+      // Only moderators and admins can read reports
+      allow read: if isAdmin() ||
+        (resource != null && isModerator(resource.data.community_id));
+
+      // Authenticated users can create reports
+      allow create: if isAuthenticated() &&
+        hasRequiredFields(['reporter_id', 'target_id', 'target_type', 'reason', 'created_at']) &&
+        request.resource.data.reporter_id == request.auth.uid &&
+        request.resource.data.target_type in ['post', 'comment', 'user'] &&
+        isValidLength(request.resource.data.reason, 500) &&
+        isServerTimestamp('created_at') &&
+        withinRateLimit();
+
+      // Moderators can update report status
+      allow update: if isAdmin() || isModerator(resource.data.community_id);
+
+      // Reports cannot be deleted
+      allow delete: if false;
+    }
+
+    // ============================================
+    // MODERATION LOGS
+    // ============================================
+
+    match /moderation_logs/{logId} {
+      // Only moderators and admins can read logs
+      allow read: if isAdmin() ||
+        (resource != null && isModerator(resource.data.community_id));
+
+      // Only system can write logs (via Cloud Functions)
+      allow write: if false;
+    }
+
+    // ============================================
+    // BANNED USERS COLLECTION
+    // ============================================
+
+    match /banned_users/{bannedId} {
+      // Moderators can read bans for their communities
+      allow read: if isAdmin() ||
+        (resource != null && isModerator(resource.data.community_id));
+
+      // Moderators can create bans
+      allow create: if isAdmin() ||
+        (isModerator(request.resource.data.community_id) &&
+         hasRequiredFields(['user_id', 'community_id', 'reason', 'banned_by', 'banned_at']) &&
+         request.resource.data.banned_by == request.auth.uid &&
+         isServerTimestamp('banned_at'));
+
+      // Moderators can update bans (unban)
+      allow update: if isAdmin() ||
+        isModerator(resource.data.community_id);
+
+      // Bans cannot be deleted (only updated to unbanned)
+      allow delete: if false;
+    }
+
+    // ============================================
+    // ANALYTICS COLLECTION (READ-ONLY)
+    // ============================================
+
+    match /analytics/{analyticsId} {
+      // Public read for aggregate data
+      allow read: if true;
+
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+
+    // ============================================
+    // SYSTEM HEALTH CHECK
+    // ============================================
+
+    match /_health/{document} {
+      // Anyone can read health check
+      allow read: if true;
+
+      // No one can write (except admin SDK)
+      allow write: if false;
+    }
+  }
+}

@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Create a new post on GT AI Hub">
+    <meta name="keywords" content="Georgia Tech, Create Post, Share, Discussion">
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#B3A369">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+    <title>Create Post - GT AI & Vibe-Coding Hub</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="/styles/editor.css">
+
+    <!-- Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://firebaseapp.com">
+
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body class="create-post-page">
+    <!-- Skip to main content -->
+    <a href="#main" class="skip-link">Skip to main content</a>
+
+    <!-- Header Navigation -->
+    <header class="site-header" role="banner">
+        <nav class="navbar" aria-label="Main navigation">
+            <div class="nav-container">
+                <div class="nav-left">
+                    <a href="/feed.html" class="back-button" aria-label="Back to feed">
+                        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        </svg>
+                        <span>Cancel</span>
+                    </a>
+                    <a href="/" class="logo" aria-label="GT AI Hub Home">
+                        <svg class="logo-icon" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">
+                            <rect width="32" height="32" fill="#B3A369"/>
+                        </svg>
+                        <span class="logo-text">GT AI Hub</span>
+                    </a>
+                </div>
+                <div class="nav-center">
+                    <h1 class="page-title">Create Post</h1>
+                </div>
+                <div class="nav-right">
+                    <button class="btn btn-secondary" id="save-draft">Save Draft</button>
+                    <button class="btn btn-primary" id="submit-post" disabled>Post</button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main id="main" class="create-post-main" role="main">
+        <div class="create-post-container">
+            <!-- Create Post Form -->
+            <form class="create-post-form" id="create-post-form">
+                <!-- Community Selection -->
+                <div class="form-section">
+                    <label for="community-select" class="form-label required">Choose a community</label>
+                    <select id="community-select" class="community-select" required aria-required="true">
+                        <option value="">Select a community...</option>
+                        <optgroup label="Course Communities">
+                            <option value="cs1331">CS 1331 - Intro to OOP</option>
+                            <option value="cs1332">CS 1332 - Data Structures</option>
+                            <option value="cs2110">CS 2110 - Computer Organization</option>
+                            <option value="cs3510">CS 3510 - Design & Analysis of Algorithms</option>
+                            <option value="cs4641">CS 4641 - Machine Learning</option>
+                            <option value="cs7641">CS 7641 - Machine Learning (Graduate)</option>
+                        </optgroup>
+                        <optgroup label="Topic Communities">
+                            <option value="ai-coding">AI & Vibe-Coding</option>
+                            <option value="research">Research & Papers</option>
+                            <option value="projects">Project Showcase</option>
+                            <option value="hackgt">HackGT</option>
+                            <option value="careers">Careers & Internships</option>
+                            <option value="study-groups">Study Groups</option>
+                        </optgroup>
+                        <optgroup label="General">
+                            <option value="general">General Discussion</option>
+                            <option value="announcements">Announcements</option>
+                            <option value="questions">Questions</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <!-- Post Type Selection -->
+                <div class="form-section">
+                    <fieldset class="post-type-selector">
+                        <legend class="form-label">Post type</legend>
+                        <div class="post-type-options" role="radiogroup">
+                            <label class="post-type-option">
+                                <input type="radio" name="post-type" value="text" checked>
+                                <div class="post-type-content">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path fill="currentColor" d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                                    </svg>
+                                    <span>Text</span>
+                                </div>
+                            </label>
+                            <label class="post-type-option">
+                                <input type="radio" name="post-type" value="link">
+                                <div class="post-type-content">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path fill="currentColor" d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
+                                    </svg>
+                                    <span>Link</span>
+                                </div>
+                            </label>
+                            <label class="post-type-option">
+                                <input type="radio" name="post-type" value="vibe-code">
+                                <div class="post-type-content">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path fill="currentColor" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/>
+                                    </svg>
+                                    <span>Vibe-Code</span>
+                                </div>
+                            </label>
+                            <label class="post-type-option">
+                                <input type="radio" name="post-type" value="project">
+                                <div class="post-type-content">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path fill="currentColor" d="M12 2l-5.5 9h11z M12 22l5.5-9h-11z M3.5 13l4-7v14z M20.5 13l-4-7v14z"/>
+                                    </svg>
+                                    <span>Project</span>
+                                </div>
+                            </label>
+                        </div>
+                    </fieldset>
+                </div>
+
+                <!-- Title Input -->
+                <div class="form-section">
+                    <label for="post-title" class="form-label required">Title</label>
+                    <input
+                        type="text"
+                        id="post-title"
+                        class="post-title-input"
+                        placeholder="Enter an interesting title..."
+                        maxlength="300"
+                        required
+                        aria-required="true"
+                        aria-describedby="title-counter"
+                    >
+                    <div class="input-footer">
+                        <span id="title-counter" class="char-counter">0/300</span>
+                    </div>
+                </div>
+
+                <!-- Link Input (shown for link posts) -->
+                <div class="form-section" id="link-section" hidden>
+                    <label for="post-link" class="form-label required">URL</label>
+                    <input
+                        type="url"
+                        id="post-link"
+                        class="post-link-input"
+                        placeholder="https://example.com"
+                        aria-describedby="link-hint"
+                    >
+                    <small id="link-hint" class="form-hint">Enter a valid URL starting with http:// or https://</small>
+                </div>
+
+                <!-- Content Editor -->
+                <div class="form-section" id="content-section">
+                    <label for="post-content" class="form-label">Content</label>
+
+                    <!-- Editor Toolbar -->
+                    <div class="editor-toolbar" role="toolbar" aria-label="Text formatting">
+                        <div class="toolbar-group">
+                            <button type="button" class="toolbar-button" data-action="bold" aria-label="Bold" title="Bold (Ctrl+B)">
+                                <strong>B</strong>
+                            </button>
+                            <button type="button" class="toolbar-button" data-action="italic" aria-label="Italic" title="Italic (Ctrl+I)">
+                                <em>I</em>
+                            </button>
+                            <button type="button" class="toolbar-button" data-action="strike" aria-label="Strikethrough" title="Strikethrough">
+                                <s>S</s>
+                            </button>
+                        </div>
+
+                        <div class="toolbar-divider"></div>
+
+                        <div class="toolbar-group">
+                            <button type="button" class="toolbar-button" data-action="heading" aria-label="Heading" title="Heading">
+                                <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill="currentColor" d="M3 4v7h7V4h2v16h-2v-7H3v7H1V4h2zm13 0h2v16h-2v-7h-3v-2h3V4z"/>
+                                </svg>
+                            </button>
+                            <button type="button" class="toolbar-button" data-action="link" aria-label="Link" title="Link (Ctrl+K)">
+                                <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill="currentColor" d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
+                                </svg>
+                            </button>
+                            <button type="button" class="toolbar-button" data-action="quote" aria-label="Quote" title="Quote">
+                                <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill="currentColor" d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="toolbar-divider"></div>
+
+                        <div class="toolbar-group">
+                            <button type="button" class="toolbar-button" data-action="ul" aria-label="Bullet list" title="Bullet list">
+                                <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill="currentColor" d="M4 10.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm0-6c-.83 0-1.5.67-1.5 1.5S3.17 7.5 4 7.5 5.5 6.83 5.5 6 4.83 4.5 4 4.5zm0 12c-.83 0-1.5.68-1.5 1.5s.68 1.5 1.5 1.5 1.5-.68 1.5-1.5-.67-1.5-1.5-1.5zM7 19h14v-2H7v2zm0-6h14v-2H7v2zm0-8v2h14V5H7z"/>
+                                </svg>
+                            </button>
+                            <button type="button" class="toolbar-button" data-action="ol" aria-label="Numbered list" title="Numbered list">
+                                <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill="currentColor" d="M2 17h2v.5H3v1h1v.5H2v1h3v-4H2v1zm1-9h1V4H2v1h1v3zm-1 3h1.8L2 13.1v.9h3v-1H3.2L5 10.9V10H2v1zm5-6v2h14V5H7zm0 14h14v-2H7v2zm0-6h14v-2H7v2z"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="toolbar-divider"></div>
+
+                        <div class="toolbar-group">
+                            <button type="button" class="toolbar-button" data-action="code" aria-label="Code block" title="Code block">
+                                <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill="currentColor" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/>
+                                </svg>
+                            </button>
+                            <button type="button" class="toolbar-button" data-action="spoiler" aria-label="Spoiler" title="Spoiler">
+                                <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill="currentColor" d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="toolbar-spacer"></div>
+
+                        <div class="toolbar-group">
+                            <button type="button" class="toolbar-button" data-action="preview" aria-label="Toggle preview" title="Preview">
+                                <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill="currentColor" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                                </svg>
+                                Preview
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Text Editor -->
+                    <div class="editor-container">
+                        <textarea
+                            id="post-content"
+                            class="post-content-editor"
+                            placeholder="Share your thoughts, code, or ideas... (Markdown supported)"
+                            rows="12"
+                            aria-describedby="content-hint"
+                        ></textarea>
+
+                        <!-- Preview Pane -->
+                        <div class="preview-pane" id="preview-pane" hidden>
+                            <div class="preview-content" id="preview-content">
+                                <!-- Rendered markdown will appear here -->
+                            </div>
+                        </div>
+                    </div>
+                    <small id="content-hint" class="form-hint">
+                        You can use Markdown for formatting. **bold**, *italic*, `code`, [links](url), etc.
+                    </small>
+                </div>
+
+                <!-- Vibe-Code Section (shown for vibe-code posts) -->
+                <div class="form-section" id="vibe-code-section" hidden>
+                    <div class="vibe-code-container">
+                        <div class="vibe-code-header">
+                            <h3>AI Prompt</h3>
+                            <select class="ai-model-select" aria-label="Select AI model">
+                                <option value="claude-3.5">Claude 3.5 Sonnet</option>
+                                <option value="gpt-4">GPT-4</option>
+                                <option value="claude-opus">Claude Opus</option>
+                                <option value="gemini">Gemini Pro</option>
+                            </select>
+                        </div>
+                        <textarea
+                            class="vibe-prompt-input"
+                            placeholder="Enter your prompt here..."
+                            rows="4"
+                        ></textarea>
+
+                        <div class="vibe-code-header">
+                            <h3>Generated Code</h3>
+                            <select class="code-language-select" aria-label="Select programming language">
+                                <option value="javascript">JavaScript</option>
+                                <option value="python">Python</option>
+                                <option value="java">Java</option>
+                                <option value="cpp">C++</option>
+                                <option value="rust">Rust</option>
+                                <option value="go">Go</option>
+                                <option value="typescript">TypeScript</option>
+                            </select>
+                        </div>
+                        <textarea
+                            class="vibe-code-input"
+                            placeholder="Paste the generated code here..."
+                            rows="10"
+                            spellcheck="false"
+                        ></textarea>
+
+                        <div class="vibe-code-notes">
+                            <label for="vibe-notes">Notes & Commentary</label>
+                            <textarea
+                                id="vibe-notes"
+                                class="vibe-notes-input"
+                                placeholder="Share your experience, modifications, or lessons learned..."
+                                rows="4"
+                            ></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project Section (shown for project posts) -->
+                <div class="form-section" id="project-section" hidden>
+                    <div class="project-container">
+                        <div class="project-field">
+                            <label for="project-demo">Demo URL</label>
+                            <input
+                                type="url"
+                                id="project-demo"
+                                class="project-input"
+                                placeholder="https://your-project-demo.com"
+                            >
+                        </div>
+
+                        <div class="project-field">
+                            <label for="project-github">GitHub Repository</label>
+                            <input
+                                type="url"
+                                id="project-github"
+                                class="project-input"
+                                placeholder="https://github.com/username/repo"
+                            >
+                        </div>
+
+                        <div class="project-field">
+                            <label for="project-tech">Technologies Used</label>
+                            <input
+                                type="text"
+                                id="project-tech"
+                                class="project-input"
+                                placeholder="React, Node.js, Firebase, etc."
+                            >
+                        </div>
+
+                        <div class="project-field">
+                            <label for="project-team">Team Members (optional)</label>
+                            <input
+                                type="text"
+                                id="project-team"
+                                class="project-input"
+                                placeholder="@username1, @username2"
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tags Section -->
+                <div class="form-section">
+                    <label for="post-tags" class="form-label">Tags</label>
+                    <div class="tags-container">
+                        <input
+                            type="text"
+                            id="post-tags"
+                            class="tags-input"
+                            placeholder="Add tags (press Enter)"
+                            aria-describedby="tags-hint"
+                        >
+                        <div class="tags-list" id="tags-list">
+                            <!-- Tags will be added here dynamically -->
+                        </div>
+                    </div>
+                    <small id="tags-hint" class="form-hint">
+                        Add relevant tags to help others find your post. Press Enter after each tag.
+                    </small>
+
+                    <!-- Suggested Tags -->
+                    <div class="suggested-tags">
+                        <span class="suggested-label">Suggested:</span>
+                        <button type="button" class="tag-suggestion" data-tag="vibe-coding">vibe-coding</button>
+                        <button type="button" class="tag-suggestion" data-tag="ai">ai</button>
+                        <button type="button" class="tag-suggestion" data-tag="machine-learning">machine-learning</button>
+                        <button type="button" class="tag-suggestion" data-tag="homework-help">homework-help</button>
+                        <button type="button" class="tag-suggestion" data-tag="project">project</button>
+                        <button type="button" class="tag-suggestion" data-tag="question">question</button>
+                        <button type="button" class="tag-suggestion" data-tag="discussion">discussion</button>
+                    </div>
+                </div>
+
+                <!-- Flair Selection -->
+                <div class="form-section">
+                    <label for="post-flair" class="form-label">Flair (optional)</label>
+                    <select id="post-flair" class="flair-select">
+                        <option value="">No flair</option>
+                        <option value="question">❓ Question</option>
+                        <option value="discussion">💬 Discussion</option>
+                        <option value="vibe-code">🤖 Vibe-Code</option>
+                        <option value="project">🚀 Project</option>
+                        <option value="resource">📚 Resource</option>
+                        <option value="news">📰 News</option>
+                        <option value="meta">📋 Meta</option>
+                        <option value="homework">📝 Homework Help</option>
+                        <option value="career">💼 Career</option>
+                        <option value="research">🔬 Research</option>
+                    </select>
+                </div>
+
+                <!-- Post Options -->
+                <div class="form-section">
+                    <fieldset class="post-options">
+                        <legend class="form-label">Post options</legend>
+
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="notify-replies">
+                            <span>Send me notifications for new comments</span>
+                        </label>
+
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="mark-spoiler">
+                            <span>Mark as spoiler</span>
+                        </label>
+
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="mark-nsfw">
+                            <span>Mark as NSFW</span>
+                        </label>
+
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="original-content">
+                            <span>Mark as Original Content (OC)</span>
+                        </label>
+                    </fieldset>
+                </div>
+
+                <!-- Submit Actions -->
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="save-draft-bottom">Save Draft</button>
+                    <button type="submit" class="btn btn-primary" id="submit-post-bottom">Post</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="create-post-sidebar" aria-label="Posting guidelines">
+            <!-- Community Rules -->
+            <section class="sidebar-card">
+                <header class="sidebar-card-header">
+                    <h2>Posting Guidelines</h2>
+                </header>
+                <div class="sidebar-card-body">
+                    <ol class="guidelines-list">
+                        <li>Be respectful and constructive</li>
+                        <li>Use descriptive titles</li>
+                        <li>Choose the appropriate community</li>
+                        <li>Add relevant tags and flair</li>
+                        <li>No plagiarism or academic dishonesty</li>
+                        <li>Mark AI-generated content appropriately</li>
+                        <li>Include code in proper formatting blocks</li>
+                        <li>Check for duplicates before posting</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- Markdown Help -->
+            <section class="sidebar-card">
+                <header class="sidebar-card-header">
+                    <h2>Markdown Quick Reference</h2>
+                </header>
+                <div class="sidebar-card-body">
+                    <dl class="markdown-help">
+                        <dt>**bold**</dt>
+                        <dd><strong>bold</strong></dd>
+
+                        <dt>*italic*</dt>
+                        <dd><em>italic</em></dd>
+
+                        <dt>[link](url)</dt>
+                        <dd><a href="#">link</a></dd>
+
+                        <dt>`code`</dt>
+                        <dd><code>code</code></dd>
+
+                        <dt>```<br>code block<br>```</dt>
+                        <dd><pre>code block</pre></dd>
+
+                        <dt>&gt; quote</dt>
+                        <dd><blockquote>quote</blockquote></dd>
+
+                        <dt># Heading</dt>
+                        <dd><strong>Heading</strong></dd>
+
+                        <dt>- list item</dt>
+                        <dd>• list item</dd>
+                    </dl>
+                </div>
+            </section>
+
+            <!-- Tips -->
+            <section class="sidebar-card">
+                <header class="sidebar-card-header">
+                    <h2>Pro Tips</h2>
+                </header>
+                <div class="sidebar-card-body">
+                    <ul class="tips-list">
+                        <li>📸 Drag and drop images directly into the editor</li>
+                        <li>⌨️ Use Ctrl/Cmd + Enter to submit</li>
+                        <li>💾 Drafts are auto-saved every 30 seconds</li>
+                        <li>🔍 Preview your post before submitting</li>
+                        <li>🏷️ Use specific tags to reach the right audience</li>
+                    </ul>
+                </div>
+            </section>
+        </aside>
+    </main>
+
+    <!-- Scripts -->
+    <script src="/js/create-post.js" defer></script>
+    <script src="/js/markdown.js" defer></script>
+</body>
+</html>
